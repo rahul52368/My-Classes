@@ -1,0 +1,42 @@
+import tkinter as tk
+from tkinter import filedialog
+import fitz  # PyMuPDF
+
+def open_pdf_dialog():
+    file_path = filedialog.askopenfilename(title="Select a PDF file", filetypes=(("PDF files", "*.pdf"), ("All files", "*.*")))
+    if file_path:
+        print("Selected PDF file:", file_path)
+        extract_images_from_pdf(file_path)
+    else:
+        print("No file selected.")
+
+def extract_images_from_pdf(pdf_file_path):
+    try:
+        pdf_document = fitz.open(pdf_file_path)
+        images = []
+
+        for page_number in range(pdf_document.page_count):
+            page = pdf_document[page_number]
+            image_list = page.get_images(full=True)
+
+            for img_index, img_info in enumerate(image_list):
+                xref = img_info[0]
+                base_image = pdf_document.extract_image(xref)
+                image = base_image["image"]
+                images.append(image)
+
+        print(f"Total {len(images)} images extracted.")
+        
+        for index, image in enumerate(images):
+            image_file_path = f"image_{index}.png"
+            with open(image_file_path, "wb") as image_file:
+                image_file.write(image)
+
+        print("Images saved to files.")
+    except Exception as e:
+        print("Error:", e)
+
+root = tk.Tk()
+root.withdraw()  # Hide the main window
+
+open_pdf_dialog()
