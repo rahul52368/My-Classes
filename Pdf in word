@@ -16,3 +16,29 @@ while word_app.Documents.Count > 0:
 
 # Close Word application
 word_app.Quit()
+
+
+
+
+
+import win32com.client
+
+pdf_path = "path_to_your_pdf_file.pdf"
+word_app = win32com.client.Dispatch("Word.Application")
+
+word_app.Visible = True  # Make Word visible
+
+# Disable alerts to suppress confirmation dialogs
+word_app.DisplayAlerts = 0
+
+# Open PDF in Word
+doc = word_app.Documents.Open(pdf_path)
+
+# Do some processing if needed
+
+# Close the PDF document
+doc.Close()
+
+# Quit Word application
+word_app.Quit()
+
