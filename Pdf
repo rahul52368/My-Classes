@@ -1,0 +1,15 @@
+from docx import Document
+from docx.shared import Inches
+
+# Create a new document
+doc = Document()
+
+# List of image filenames
+image_filenames = ['image1.jpg', 'image2.png', 'image3.jpg']
+
+# Add images to the document
+for filename in image_filenames:
+    doc.add_picture(filename, width=Inches(4))  # Adjust width as needed
+
+# Save the document
+doc.save('images.docx')
