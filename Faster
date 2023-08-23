@@ -1,0 +1,30 @@
+import os
+import subprocess
+from docx import Document
+
+def pdf_to_text(pdf_path):
+    result = subprocess.run(["pdftotext", "-layout", pdf_path, "-"], stdout=subprocess.PIPE, text=True)
+    return result.stdout
+
+def text_to_word(text, docx_path):
+    docx = Document()
+    docx.add_paragraph(text)
+    docx.save(docx_path)
+
+def main():
+    print("PDF to Word Converter")
+    pdf_path = input("Enter the path to the PDF file: ")
+    
+    if not os.path.exists(pdf_path):
+        print("File not found.")
+        return
+
+    pdf_text = pdf_to_text(pdf_path)
+
+    docx_path = os.path.splitext(pdf_path)[0] + ".docx"
+    text_to_word(pdf_text, docx_path)
+
+    print("Conversion successful. Word document saved as:", docx_path)
+
+if __name__ == "__main__":
+    main()
