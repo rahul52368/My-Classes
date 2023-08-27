@@ -1,0 +1,84 @@
+Dim numText
+numText = InputBox("Enter a numeric text:")
+
+Function TextToNumber(text)
+    Dim numbers(20)
+    numbers(0) = "zero"
+    numbers(1) = "one"
+    numbers(2) = "two"
+    numbers(3) = "three"
+    numbers(4) = "four"
+    numbers(5) = "five"
+    numbers(6) = "six"
+    numbers(7) = "seven"
+    numbers(8) = "eight"
+    numbers(9) = "nine"
+    numbers(10) = "ten"
+    numbers(11) = "eleven"
+    numbers(12) = "twelve"
+    numbers(13) = "thirteen"
+    numbers(14) = "fourteen"
+    numbers(15) = "fifteen"
+    numbers(16) = "sixteen"
+    numbers(17) = "seventeen"
+    numbers(18) = "eighteen"
+    numbers(19) = "nineteen"
+    
+    Dim tens(10)
+    tens(2) = "twenty"
+    tens(3) = "thirty"
+    tens(4) = "forty"
+    tens(5) = "fifty"
+    tens(6) = "sixty"
+    tens(7) = "seventy"
+    tens(8) = "eighty"
+    tens(9) = "ninety"
+    
+    Dim parts
+    parts = Split(text, " ")
+    
+    Dim result
+    result = 0
+    
+    Dim i
+    For i = LBound(parts) To UBound(parts)
+        Dim part
+        part = LCase(parts(i))
+        
+        Dim numIndex
+        numIndex = -1
+        
+        If IsNumeric(part) Then
+            result = result + CDbl(part)
+        Else
+            numIndex = -1
+            For j = LBound(numbers) To UBound(numbers)
+                If numbers(j) = part Then
+                    numIndex = j
+                    Exit For
+                End If
+            Next
+            
+            If numIndex = -1 Then
+                For j = LBound(tens) To UBound(tens)
+                    If tens(j) = part Then
+                        numIndex = j * 10
+                        Exit For
+                    End If
+                Next
+            End If
+            
+            If numIndex <> -1 Then
+                result = result + numIndex
+            Else
+                WScript.Echo "Unrecognized word: " & part
+            End If
+        End If
+    Next
+    
+    TextToNumber = result
+End Function
+
+Dim convertedNumber
+convertedNumber = TextToNumber(numText)
+WScript.Echo "Converted number: " & convertedNumber
