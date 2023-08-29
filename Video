@@ -1,0 +1,43 @@
+import cv2
+from PIL import Image, ImageDraw, ImageFont
+
+# Video settings
+output_file = 'text_to_video.mp4'
+frame_width = 640
+frame_height = 480
+fps = 30
+
+# Text settings
+text = "Hello, this is a text-to-video example!"
+font_size = 20
+font_color = (255, 255, 255)  # White
+
+# Create VideoWriter
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+out = cv2.VideoWriter(output_file, fourcc, fps, (frame_width, frame_height))
+
+# Create PIL image and font
+image = Image.new('RGB', (frame_width, frame_height), (0, 0, 0))
+font = ImageFont.truetype("arial.ttf", font_size)
+draw = ImageDraw.Draw(image)
+
+# Create video frames
+num_frames = 100
+for _ in range(num_frames):
+    # Clear the image with a black background
+    image.paste((0, 0, 0))
+
+    # Draw text in the center
+    text_width, text_height = draw.textsize(text, font=font)
+    x = (frame_width - text_width) // 2
+    y = (frame_height - text_height) // 2
+    draw.text((x, y), text, font=font, fill=font_color)
+
+    # Convert PIL image to OpenCV format
+    frame = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
+    # Write the frame to the video
+    out.write(frame)
+
+# Release VideoWriter and close the video file
+out.release()
