@@ -1,0 +1,44 @@
+Sub ImportSheetsIntoNewSheets()
+    Dim FileDialog As FileDialog
+    Dim SelectedFiles As FileDialogSelectedItems
+    Dim WorkbookToOpen As Workbook
+    Dim SheetToImport As Worksheet
+    Dim NewSheet As Worksheet
+    
+    ' Set up a file dialog to select multiple workbooks
+    Set FileDialog = Application.FileDialog(msoFileDialogOpen)
+    FileDialog.Title = "Select Excel Workbooks to Import"
+    FileDialog.AllowMultiSelect = True
+    
+    If FileDialog.Show = -1 Then ' User selected files
+        Set SelectedFiles = FileDialog.SelectedItems
+        
+        ' Loop through selected workbooks
+        For Each File In SelectedFiles
+            ' Open each workbook
+            Set WorkbookToOpen = Workbooks.Open(File)
+            
+            ' Change "Sheet1" to the name of the sheet you want to import
+            Set SheetToImport = WorkbookToOpen.Sheets("Sheet1")
+            
+            ' Create a new worksheet in the current workbook
+            Set NewSheet = ThisWorkbook.Sheets.Add
+            
+            ' Copy data from the imported sheet to the new sheet
+            SheetToImport.UsedRange.Copy NewSheet.Cells(1, 1)
+            
+            ' Rename the new sheet if needed
+            NewSheet.Name = "Imported_" & WorkbookToOpen.Name
+            
+            ' Close the imported workbook without saving changes
+            WorkbookToOpen.Close False
+        Next File
+    End If
+    
+    ' Clean up
+    Set FileDialog = Nothing
+    Set SelectedFiles = Nothing
+    Set WorkbookToOpen = Nothing
+    Set SheetToImport = Nothing
+    Set NewSheet = Nothing
+End Sub
