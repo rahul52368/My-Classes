@@ -1,0 +1,44 @@
+Sub ImportSheetsFromMultipleWorkbooks()
+    Dim FileDialog As FileDialog
+    Dim SelectedFiles As FileDialogSelectedItems
+    Dim WorkbookToOpen As Workbook
+    Dim SheetToImport As Worksheet
+    Dim LastRow As Long
+    Dim DestRow As Long
+    
+    ' Set up a file dialog to select multiple workbooks
+    Set FileDialog = Application.FileDialog(msoFileDialogOpen)
+    FileDialog.Title = "Select Excel Workbooks to Import"
+    FileDialog.AllowMultiSelect = True
+    
+    If FileDialog.Show = -1 Then ' User selected files
+        Set SelectedFiles = FileDialog.SelectedItems
+        
+        ' Loop through selected workbooks
+        For Each File In SelectedFiles
+            ' Open each workbook
+            Set WorkbookToOpen = Workbooks.Open(File)
+            
+            ' Change "Sheet1" to the name of the sheet you want to import
+            Set SheetToImport = WorkbookToOpen.Sheets("Sheet1")
+            
+            ' Find the last row in the current workbook
+            LastRow = ThisWorkbook.Sheets(1).Cells(ThisWorkbook.Sheets(1).Rows.Count, "A").End(xlUp).Row
+            
+            ' Find the next available row in the current workbook
+            DestRow = LastRow + 1
+            
+            ' Copy data from the imported sheet to the current workbook
+            SheetToImport.UsedRange.Copy ThisWorkbook.Sheets(1).Cells(DestRow, 1)
+            
+            ' Close the imported workbook without saving changes
+            WorkbookToOpen.Close False
+        Next File
+    End If
+    
+    ' Clean up
+    Set FileDialog = Nothing
+    Set SelectedFiles = Nothing
+    Set WorkbookToOpen = Nothing
+    Set SheetToImport = Nothing
+End Sub
