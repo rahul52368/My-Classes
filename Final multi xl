@@ -1,0 +1,41 @@
+Sub CopySheetsFromMultipleWorkbooksInDirectory()
+    Dim SourceFolder As String
+    Dim FileName As String
+    Dim SourceWorkbook As Workbook
+    Dim DestinationWorkbook As Workbook
+    Dim SourceSheet As Worksheet
+    Dim DestinationSheet As Worksheet
+    Dim FileExtension As String
+    
+    ' Set the source folder (current directory)
+    SourceFolder = ThisWorkbook.Path & "\"
+    
+    ' Set the destination workbook
+    Set DestinationWorkbook = Workbooks.Add
+    
+    ' Loop through files in the directory
+    FileName = Dir(SourceFolder & "*.*")
+    Do While FileName <> ""
+        ' Check if the file is an Excel workbook
+        If Right(FileName, 4) = ".xls" Or Right(FileName, 5) = ".xlsx" Then
+            ' Open the source workbook
+            Set SourceWorkbook = Workbooks.Open(SourceFolder & FileName)
+            
+            ' Define the source and destination sheets within the workbooks
+            Set SourceSheet = SourceWorkbook.Sheets("SourceSheetName") ' Replace with the source sheet name
+            Set DestinationSheet = DestinationWorkbook.Sheets.Add ' Creates a new sheet in the destination workbook
+            
+            ' Copy the entire source sheet and paste it into the destination sheet
+            SourceSheet.Copy Before:=DestinationSheet
+            
+            ' Close the source workbook without saving changes
+            SourceWorkbook.Close SaveChanges:=False
+        End If
+        ' Get the next file in the directory
+        FileName = Dir
+    Loop
+    
+    ' Save and close the destination workbook
+    DestinationWorkbook.SaveAs SourceFolder & "MergedWorkbook.xlsx" ' Adjust the destination file name as needed
+    DestinationWorkbook.Close SaveChanges:=False
+End Sub
