@@ -1,0 +1,51 @@
+Sub ImportSheetsFromWorkbooks()
+    Dim FileDialog As FileDialog
+    Dim SelectedFiles As FileDialogSelectedItems
+    Dim SourceWorkbook As Workbook
+    Dim TargetWorkbook As Workbook
+    Dim SheetName As String
+    Dim File As Variant
+    
+    ' Create a FileDialog object as a File Picker dialog box.
+    Set FileDialog = Application.FileDialog(msoFileDialogOpen)
+    
+    ' Allow the user to select multiple files.
+    FileDialog.AllowMultiSelect = True
+    
+    ' Show the File Picker dialog and store the selected files.
+    Set SelectedFiles = FileDialog.Show
+    
+    ' Check if any files were selected.
+    If Not SelectedFiles Is Nothing Then
+        ' Set the target workbook (where you want to copy the sheets).
+        Set TargetWorkbook = ThisWorkbook ' Change to the desired target workbook
+        
+        ' Loop through each selected file.
+        For Each File In SelectedFiles
+            ' Open the selected workbook.
+            Set SourceWorkbook = Workbooks.Open(File)
+            
+            ' Prompt the user to select a sheet from the opened workbook.
+            SheetName = InputBox("Enter the name of the sheet you want to import from " & SourceWorkbook.Name & ":")
+            
+            ' Check if the sheet name is not empty.
+            If SheetName <> "" Then
+                On Error Resume Next ' Ignore errors if the sheet doesn't exist.
+                
+                ' Copy the selected sheet to the target workbook.
+                SourceWorkbook.Sheets(SheetName).Copy Before:=TargetWorkbook.Sheets(1)
+                
+                On Error GoTo 0 ' Reset error handling.
+            End If
+            
+            ' Close the opened workbook without saving changes.
+            SourceWorkbook.Close SaveChanges:=False
+        Next File
+    End If
+    
+    ' Clean up objects.
+    Set FileDialog = Nothing
+    Set SelectedFiles = Nothing
+    Set SourceWorkbook = Nothing
+    Set TargetWorkbook = Nothing
+End Sub
