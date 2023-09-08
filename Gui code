@@ -1,0 +1,47 @@
+To create a Python GUI that can execute your program, you can use the `subprocess` module to run external programs and a GUI library like Tkinter. Here's an example of how you can create a basic GUI to execute a Python script:
+
+```python
+import tkinter as tk
+import subprocess
+
+def run_program():
+    script_path = entry.get()
+    try:
+        result = subprocess.check_output(["python", script_path], stderr=subprocess.STDOUT, text=True)
+        output_text.config(state=tk.NORMAL)
+        output_text.delete("1.0", tk.END)
+        output_text.insert(tk.END, result)
+        output_text.config(state=tk.DISABLED)
+    except subprocess.CalledProcessError as e:
+        output_text.config(state=tk.NORMAL)
+        output_text.delete("1.0", tk.END)
+        output_text.insert(tk.END, "Error: " + e.output)
+        output_text.config(state=tk.DISABLED)
+
+# Create the main window
+root = tk.Tk()
+root.title("Python Script Runner")
+
+# Create an entry widget for entering the script path
+entry_label = tk.Label(root, text="Enter the script path:")
+entry_label.pack()
+entry = tk.Entry(root)
+entry.pack()
+
+# Create a button to run the script
+run_button = tk.Button(root, text="Run Script", command=run_program)
+run_button.pack()
+
+# Create a text widget to display the output
+output_text = tk.Text(root, wrap=tk.WORD, height=10, width=40, state=tk.DISABLED)
+output_text.pack()
+
+# Run the main loop
+root.mainloop()
+```
+
+This code creates a simple Tkinter GUI where you can enter the path to your Python script, click the "Run Script" button, and see the output displayed in a text widget. If an error occurs during execution, it will be displayed in the text widget as well.
+
+Make sure to replace `"python"` in the `subprocess.check_output` call with the appropriate Python interpreter command if needed, depending on your system and environment.
+
+You can further enhance this GUI by adding features like file dialogs for selecting the script or error handling as per your requirements.
