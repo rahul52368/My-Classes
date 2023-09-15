@@ -1,0 +1,25 @@
+Sub RemoveCharactersBeforeString()
+    Dim LastRow As Long
+    Dim i As Long
+    Dim CellText As String
+    Dim SearchString As String
+    Dim Position As Long
+
+    ' Define the search string
+    SearchString = "ExampleString"
+
+    ' Define the last row with data in column A
+    LastRow = Cells(Rows.Count, "A").End(xlUp).Row
+
+    ' Loop through each row and remove characters before the search string
+    For i = 1 To LastRow
+        CellText = Cells(i, "A").Value
+        Position = InStr(1, CellText, SearchString)
+        If Position > 0 Then
+            Cells(i, "B").Value = Mid(CellText, Position)
+        Else
+            ' If the search string is not found, copy the original text
+            Cells(i, "B").Value = CellText
+        End If
+    Next i
+End Sub
