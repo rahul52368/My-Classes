@@ -10,3 +10,24 @@ Sub ConcatenateColumns()
         Cells(i, "D").Value = Cells(i, "A").Value & Cells(i, "B").Value & Cells(i, "C").Value
     Next i
 End Sub
+
+
+
+Sub ConcatenateColumnsWithSpecialChar()
+    Dim LastRow As Long
+    Dim i As Long
+    Dim SpecialChar As String
+
+    ' Define the special character you want to use
+    SpecialChar = " - " ' Change this to your desired special character
+
+    ' Define the last row with data in column A
+    LastRow = Cells(Rows.Count, "A").End(xlUp).Row
+
+    ' Loop through each row and concatenate columns A, B, and C with the special character
+    For i = 1 To LastRow
+        If Not IsEmpty(Cells(i, "A").Value) Then
+            Cells(i, "D").Value = Cells(i, "A").Value & SpecialChar & Cells(i, "B").Value & SpecialChar & Cells(i, "C").Value
+        End If
+    Next i
+End Sub
