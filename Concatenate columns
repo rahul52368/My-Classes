@@ -1,0 +1,12 @@
+Sub ConcatenateColumns()
+    Dim LastRow As Long
+    Dim i As Long
+
+    ' Define the last row with data in column A
+    LastRow = Cells(Rows.Count, "A").End(xlUp).Row
+
+    ' Loop through each row and concatenate columns A, B, and C
+    For i = 1 To LastRow
+        Cells(i, "D").Value = Cells(i, "A").Value & Cells(i, "B").Value & Cells(i, "C").Value
+    Next i
+End Sub
