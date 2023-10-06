@@ -1,0 +1,25 @@
+Sub CompareAndMarkWithLookup()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim lookupRange As Range
+    Dim valueToLookup As Variant
+    
+    ' Set the worksheet where your data is located
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet's name
+    
+    ' Find the last row in column A
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Set the range to lookup in column B
+    Set lookupRange = ws.Range("B1:B" & lastRow)
+    
+    ' Loop through each row in column A
+    For i = 1 To lastRow
+        valueToLookup = ws.Cells(i, 1).Value
+        If IsError(Application.Match(valueToLookup, lookupRange, 0)) Then
+            ' If value is not found in column B, mark it in column C
+            ws.Cells(i, 3).Value = "Non-Matching"
+        End If
+    Next i
+End Sub
