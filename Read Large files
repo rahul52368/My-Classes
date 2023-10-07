@@ -1,0 +1,12 @@
+library(readxl)
+
+# Specify the file path
+file_path <- "your_file.xlsx"
+
+# Create a list of data frames, each containing a chunk of data
+chunks <- lapply(seq(1, nrow(readxl::read_excel(file_path))), function(start_row) {
+  readxl::read_excel(file_path, range = cell_limits(start_row = start_row, end_row = start_row + chunk_size - 1))
+})
+
+# Combine the list of chunks into one data frame
+combined_data <- do.call(rbind, chunks)
