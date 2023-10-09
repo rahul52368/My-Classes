@@ -1,0 +1,34 @@
+Sub FindRedColumns()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim col As Range
+    Dim colHeader As String
+    Dim redFound As Boolean
+    
+    ' Set the worksheet where you want to search for red cells
+    Set ws = ThisWorkbook.Worksheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Set the range where you want to search for red cells
+    Set rng = ws.UsedRange ' You can adjust this to your specific range
+    
+    ' Loop through each column
+    For Each col In rng.Columns
+        redFound = False ' Initialize the flag to check if red cell is found in the column
+        ' Loop through each cell in the column
+        For Each cell In col.Cells
+            If cell.Interior.Color = RGB(255, 0, 0) Then ' Check for red color (RGB value)
+                ' Get the column header for the current column
+                colHeader = ws.Cells(1, col.Column).Value
+                ' Display a message box with the column header
+                MsgBox "Red cell found in column: " & colHeader
+                redFound = True ' Set the flag to True
+                Exit For ' Exit the loop after the first red cell is found in the column
+            End If
+        Next cell
+        ' If red cell is found, move to the next column
+        If redFound Then
+            redFound = False ' Reset the flag for the next column
+        End If
+    Next col
+End Sub
