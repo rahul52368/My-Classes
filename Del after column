@@ -1,0 +1,23 @@
+Sub DeleteColumnsAfterSpecificHeader()
+    Dim ws As Worksheet
+    Dim lastColumn As Long
+    Dim headerToFind As String
+    Dim col As Long
+
+    ' Set the worksheet and header to find
+    Set ws = ThisWorkbook.Worksheets("Sheet1") ' Change "Sheet1" to your sheet name
+    headerToFind = "Specific Header" ' Change to your specific header
+
+    ' Find the column with the specific header
+    lastColumn = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    For col = lastColumn To 1 Step -1
+        If ws.Cells(1, col).Value = headerToFind Then
+            Exit For
+        End If
+    Next col
+
+    ' Delete columns after the column with the specific header
+    If col < lastColumn Then
+        ws.Range(ws.Cells(1, col + 1), ws.Cells(1, lastColumn)).EntireColumn.Delete
+    End If
+End Sub
