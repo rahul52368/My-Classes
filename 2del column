@@ -1,0 +1,23 @@
+Sub DeleteColumnsAfterHeader()
+    Dim HeaderText As String
+    Dim LastColumn As Long
+    Dim Col As Long
+    
+    ' Set the header text to the one you want to search for
+    HeaderText = "YourHeader"  ' Change to your specific header
+    
+    ' Find the column with the header text
+    On Error Resume Next
+    Col = Rows(1).Find(HeaderText, LookIn:=xlValues, LookAt:=xlWhole).Column
+    On Error GoTo 0
+    
+    ' If the header is found, delete columns to the right of it
+    If Col > 0 Then
+        LastColumn = Cells(1, Columns.Count).End(xlToLeft).Column
+        For Col = Col + 1 To LastColumn
+            Columns(Col).Delete
+        Next Col
+    Else
+        MsgBox "Header not found!"
+    End If
+End Sub
