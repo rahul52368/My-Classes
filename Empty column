@@ -1,23 +1,29 @@
-Sub CheckBlankColumn()
+Sub FindHeaderOfBlankColumn()
     Dim ws As Worksheet
+    Dim lastCol As Long
+    Dim header As String
     Dim col As Long
-    Dim lastRow As Long
-    
-    ' Define the worksheet you want to check
+
+    ' Define the worksheet you want to search
     Set ws = ThisWorkbook.Worksheets("Sheet1")
-    
-    ' Define the column number you want to check (e.g., column A = 1, column B = 2, etc.)
-    col = 1
-    
-    ' Find the last row in the specified column
-    lastRow = ws.Cells(ws.Rows.Count, col).End(xlUp).Row
-    
-    ' Check if the entire column is blank
-    If Application.WorksheetFunction.CountA(ws.Range(ws.Cells(1, col), ws.Cells(lastRow, col))) = 0 Then
-        ' If it's blank, display a message box with the column header
-        MsgBox "Column " & Split(ws.Cells(1, col).Address, "$")(1) & " is blank."
+
+    ' Find the last column in the first row
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+
+    ' Loop through each column in the first row
+    For col = 1 To lastCol
+        ' Check if the entire column is blank
+        If Application.WorksheetFunction.CountA(ws.Columns(col)) = 0 Then
+            ' If it's blank, store the header and exit the loop
+            header = ws.Cells(1, col).Value
+            Exit For
+        End If
+    Next col
+
+    ' Check if a blank column header was found
+    If header <> "" Then
+        MsgBox "The header of the blank column is: " & header
     Else
-        ' If it's not blank, you can do something else or display a different message.
-        MsgBox "Column " & Split(ws.Cells(1, col).Address, "$")(1) & " is not blank."
+        MsgBox "No blank columns found in the first row."
     End If
 End Sub
