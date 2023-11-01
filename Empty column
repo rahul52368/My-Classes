@@ -1,0 +1,23 @@
+Sub CheckBlankColumn()
+    Dim ws As Worksheet
+    Dim col As Long
+    Dim lastRow As Long
+    
+    ' Define the worksheet you want to check
+    Set ws = ThisWorkbook.Worksheets("Sheet1")
+    
+    ' Define the column number you want to check (e.g., column A = 1, column B = 2, etc.)
+    col = 1
+    
+    ' Find the last row in the specified column
+    lastRow = ws.Cells(ws.Rows.Count, col).End(xlUp).Row
+    
+    ' Check if the entire column is blank
+    If Application.WorksheetFunction.CountA(ws.Range(ws.Cells(1, col), ws.Cells(lastRow, col))) = 0 Then
+        ' If it's blank, display a message box with the column header
+        MsgBox "Column " & Split(ws.Cells(1, col).Address, "$")(1) & " is blank."
+    Else
+        ' If it's not blank, you can do something else or display a different message.
+        MsgBox "Column " & Split(ws.Cells(1, col).Address, "$")(1) & " is not blank."
+    End If
+End Sub
