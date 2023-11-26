@@ -1,0 +1,27 @@
+Sub SumColumnsRowWise()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your actual sheet name
+
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row ' Assuming column A has data till the end
+    
+    Dim col1Header As String
+    Dim col2Header As String
+    col1Header = "Column1" ' Change to your actual header name for column 1
+    col2Header = "Column2" ' Change to your actual header name for column 2
+    
+    Dim sumCol As Integer
+    sumCol = ws.Columns.Count + 1 ' Place the sum in the next column, adjust as needed
+
+    ' Find column numbers based on headers
+    Dim col1 As Integer
+    Dim col2 As Integer
+    col1 = Application.Match(col1Header, ws.Rows(1), 0)
+    col2 = Application.Match(col2Header, ws.Rows(1), 0)
+
+    ' Perform row-wise sum and place result in the new column
+    Dim i As Long
+    For i = 2 To lastRow
+        ws.Cells(i, sumCol).Value = ws.Cells(i, col1).Value + ws.Cells(i, col2).Value
+    Next i
+End Sub
