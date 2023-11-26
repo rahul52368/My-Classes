@@ -1,0 +1,49 @@
+Sub RoundColumnBasedOnHeader()
+    Dim ws As Worksheet
+    Dim colHeader As String
+    Dim lastRow As Long
+    Dim rng As Range
+    Dim cell As Range
+
+    ' Set the worksheet
+    On Error Resume Next
+    Set ws = ThisWorkbook.Sheets("YourSheetName") ' Change "YourSheetName" to your actual sheet name
+    On Error GoTo 0
+    
+    If ws Is Nothing Then
+        MsgBox "Worksheet not found!", vbExclamation
+        Exit Sub
+    End If
+
+    ' Set the column header
+    colHeader = "YourHeader" ' Change "YourHeader" to your actual header
+
+    ' Find the column index based on the header
+    Dim colIndex As Long
+    On Error Resume Next
+    colIndex = ws.Rows(1).Find(colHeader, LookIn:=xlValues, lookat:=xlWhole).Column
+    On Error GoTo 0
+
+    If colIndex = 0 Then
+        MsgBox "Header not found in the specified sheet!", vbExclamation
+        Exit Sub
+    End If
+
+    ' Find the last row in the column
+    lastRow = ws.Cells(ws.Rows.Count, colIndex).End(xlUp).Row
+
+    If lastRow < 2 Then
+        MsgBox "No data found in the specified column!", vbExclamation
+        Exit Sub
+    End If
+
+    ' Set the range for the column
+    Set rng = ws.Range(ws.Cells(2, colIndex), ws.Cells(lastRow, colIndex))
+
+    ' Round off each numeric cell in the specified column
+    For Each cell In rng
+        If IsNumeric(cell.Value) Then
+            cell.Value = Round(cell.Value, 2) ' Change the number (2) to the desired number of decimal places
+        End If
+    Next cell
+End Sub
