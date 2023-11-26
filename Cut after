@@ -1,0 +1,27 @@
+Sub CutPasteLastTwoColumnsAfterHeader()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your actual sheet name
+
+    ' Assuming you want to paste after a specific column header
+    Dim pasteAfterHeader As String
+    pasteAfterHeader = "YourHeader" ' Change to your desired header name
+
+    Dim pasteAfterColNum As Integer
+    On Error Resume Next
+    pasteAfterColNum = ws.Rows(1).Find(pasteAfterHeader).Column
+    On Error GoTo 0
+
+    If pasteAfterColNum = 0 Then
+        MsgBox "Header not found!", vbExclamation
+        Exit Sub
+    End If
+
+    Dim lastCol As Long
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column ' Find the last column with data
+
+    ' Cut the last two columns and paste them after the specified column header
+    ws.Columns(lastCol - 1 & ":" & lastCol).Cut
+    ws.Columns(pasteAfterColNum + 1).Insert Shift:=xlToRight
+
+    Application.CutCopyMode = False ' Clear clipboard
+End Sub
