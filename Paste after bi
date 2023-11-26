@@ -1,0 +1,24 @@
+Sub CutAndPasteColumns()
+    Dim ws As Worksheet
+    Dim targetHeader As String
+    Dim targetColumn As Range
+
+    ' Set the target worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Replace "Sheet1" with your sheet name
+
+    ' Set the target column header
+    targetHeader = "Target Header" ' Replace with your specific column header
+
+    ' Find the target column header
+    Set targetColumn = ws.Rows(1).Find(targetHeader)
+
+    ' Check if the target header is found
+    If Not targetColumn Is Nothing Then
+        ' Cut columns and paste after the target column
+        Columns("B:C").Cut
+        targetColumn.Offset(0, 1).Resize(, 2).Insert Shift:=xlToRight
+        Application.CutCopyMode = False ' Clear clipboard
+    Else
+        MsgBox "Target header not found!", vbExclamation
+    End If
+End Sub
