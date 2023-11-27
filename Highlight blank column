@@ -1,0 +1,48 @@
+Sub HighlightEntirelyBlankColumns()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim headerCell As Range
+    Dim lastRow As Long
+    Dim cell As Range
+    Dim targetHeaders As Variant
+    Dim header As Variant
+    Dim isEntirelyBlank As Boolean
+    
+    ' Set the worksheet
+    Set ws = ActiveSheet
+    
+    ' Set the range to the entire used range of the worksheet
+    Set rng = ws.UsedRange
+    
+    ' Specify the target header names in an array
+    targetHeaders = Array("Header1", "Header2", "Header3") ' Add your header names
+    
+    ' Loop through each target header
+    For Each header In targetHeaders
+        ' Find the header cell in the first row
+        Set headerCell = rng.Rows(1).Find(header, LookIn:=xlValues, LookAt:=xlWhole)
+        
+        ' Check if the header exists
+        If Not headerCell Is Nothing Then
+            ' Assume the column is entirely blank initially
+            isEntirelyBlank = True
+            
+            ' Find the last row in the used range for the current column
+            lastRow = ws.Cells(ws.Rows.Count, headerCell.Column).End(xlUp).Row
+            
+            ' Check if all cells in the column are blank starting from the second row
+            For Each cell In headerCell.Offset(1, 0).Resize(lastRow - 1, 1)
+                If Not IsEmpty(cell) Then
+                    ' If any non-blank cell is found, set the flag to false and exit the loop
+                    isEntirelyBlank = False
+                    Exit For
+                End If
+            Next cell
+            
+            ' Highlight the entire column if it's entirely blank
+            If isEntirelyBlank Then
+                Columns(headerCell.Column).Interior.Color = RGB(255, 0, 0) ' Change the RGB values as needed
+            End If
+        End If
+    Next header
+End Sub
