@@ -1,0 +1,25 @@
+Sub CopyFormattingToAnotherSheetBelowText()
+    ' Copy formatting from A1 on SourceSheet to below specific text on TargetSheet
+    
+    ' Set the target text to look for
+    Dim targetText As String
+    targetText = "YourTargetText"
+
+    ' Find the cell with the target text in TargetSheet column A
+    Dim targetCell As Range
+    Set targetCell = Sheets("TargetSheet").Columns("A").Find(targetText, LookIn:=xlValues)
+
+    ' If the target text is found, copy formatting from A1 on SourceSheet and paste it below the target text on TargetSheet
+    If Not targetCell Is Nothing Then
+        ' Copy formatting from A1 on SourceSheet
+        Sheets("SourceSheet").Range("A1").Copy
+
+        ' Paste only formatting below the target cell on TargetSheet
+        targetCell.Offset(1, 0).PasteSpecial Paste:=xlPasteFormats
+
+        ' Clear clipboard
+        Application.CutCopyMode = False
+    Else
+        MsgBox "Target text not found in TargetSheet column A."
+    End If
+End Sub
