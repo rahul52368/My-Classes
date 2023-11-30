@@ -1,0 +1,25 @@
+Sub CompareColumns()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim column1 As Range, column2 As Range
+    Dim cell1 As Range, cell2 As Range
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")  ' Change "Sheet1" to your sheet name
+
+    ' Find the last row in column A (assuming data is in column A and B)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    ' Set the ranges for the two columns
+    Set column1 = ws.Range("A1:A" & lastRow)
+    Set column2 = ws.Range("B1:B" & lastRow)
+
+    ' Loop through each cell in the columns and compare
+    For Each cell1 In column1
+        Set cell2 = column2.Cells(cell1.Row, 1)
+        If cell1.Value <> cell2.Value Then
+            ' Do something when values are different
+            Debug.Print "Mismatch at Row " & cell1.Row & ": " & cell1.Value & " <> " & cell2.Value
+        End If
+    Next cell1
+End Sub
