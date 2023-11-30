@@ -1,0 +1,42 @@
+Function VLOOKUPinColumn(headerText As String, lookupValue As Variant, returnColumnIndex As Integer, Optional sheetName As String = "Sheet1") As Variant
+    Dim ws As Worksheet
+    Dim headerRange As Range
+    Dim dataRange As Range
+    Dim result As Variant
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets(sheetName)
+    
+    ' Find the header cell
+    Set headerRange = ws.Rows(1).Find(headerText, LookIn:=xlValues, LookAt:=xlWhole)
+    
+    ' Check if the header is found
+    If Not headerRange Is Nothing Then
+        ' Set the data range excluding the header
+        Set dataRange = ws.Range(ws.Cells(2, headerRange.Column), ws.Cells(ws.Rows.Count, headerRange.Column).End(xlUp))
+        
+        ' Perform VLOOKUP
+        On Error Resume Next
+        result = Application.WorksheetFunction.VLookup(lookupValue, dataRange, returnColumnIndex, False)
+        On Error GoTo 0
+        
+        ' Check if the lookup was successful
+        If Not IsError(result) Then
+            VLOOKUPinColumn = result
+        Else
+            VLOOKUPinColumn = "Not Found"
+        End If
+    Else
+        VLOOKUPinColumn = "Header not found!"
+    End If
+End Function
+
+Sub RunVLOOKUP()
+    Dim result As Variant
+    
+    ' Call the VLOOKUPinColumn function
+    result = VLOOKUPinColumn("YourHeader", "YourLookupValue", 2, "YourSheetName")
+    
+    ' Display the result (you can modify this part based on your needs)
+    MsgBox result
+End Sub
