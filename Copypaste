@@ -1,0 +1,17 @@
+Sub CopyPasteColumn()
+    Dim ws As Worksheet
+    Dim sourceColumn As Range
+    Dim destinationHeader As Range
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")  ' Change "Sheet1" to your sheet name
+
+    ' Set the source column to copy
+    Set sourceColumn = ws.Columns("A")  ' Change "A" to your source column
+
+    ' Set the destination header
+    Set destinationHeader = ws.Rows(2).Find("YourHeader", LookIn:=xlValues)  ' Change "YourHeader" to the header you're looking for
+
+    ' Copy and paste below the specific header
+    sourceColumn.Copy destinationHeader.Offset(1, 0)
+End Sub
