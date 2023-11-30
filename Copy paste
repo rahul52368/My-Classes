@@ -1,0 +1,31 @@
+Sub CopyInsertColumn()
+    Dim ws As Worksheet
+    Dim sourceHeader As Range
+    Dim newColumn As Range
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")  ' Change "Sheet1" to your sheet name
+
+    ' Set the source header to copy
+    Set sourceHeader = ws.Rows(1).Find("YourHeader", LookIn:=xlValues)  ' Change "YourHeader" to the header you want to copy
+
+    ' Check if the header is found
+    If Not sourceHeader Is Nothing Then
+        ' Copy the entire column of the found header
+        ws.Columns(sourceHeader.Column).Copy
+
+        ' Insert a new column at the beginning
+        ws.Columns("A").Insert Shift:=xlToRight
+
+        ' Set the new column range
+        Set newColumn = ws.Columns("A")
+
+        ' Paste the copied data into the new column
+        newColumn.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+
+        ' Clear the clipboard
+        Application.CutCopyMode = False
+    Else
+        MsgBox "Header not found", vbExclamation
+    End If
+End Sub
