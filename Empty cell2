@@ -1,0 +1,19 @@
+Sub ClearCellsWithSpecificText()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    
+    ' Set your worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    
+    ' Find the last row in the specified column
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Loop through each row in the specified column
+    For i = 1 To lastRow
+        ' Check if the cell in column A contains the specific text
+        If InStr(1, ws.Cells(i, 1).Value, "YourText", vbTextCompare) > 0 Then
+            ' Clear the content of the cell if the text is found
+            ws.Cells(i, 1).ClearContents
+        End If
+    Next i
+End Sub
