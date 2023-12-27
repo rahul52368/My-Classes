@@ -1,0 +1,19 @@
+Sub BlankCellsWithSpecificText()
+    Dim ws As Worksheet
+    Dim lastRow As Long, i As Long
+    
+    ' Set your worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    
+    ' Find the last row in the specified column
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Loop through each row from bottom to top
+    For i = lastRow To 1 Step -1
+        ' Check if the cell in column A contains the specific text
+        If InStr(1, ws.Cells(i, 1).Value, "YourText", vbTextCompare) > 0 Then
+            ' Blank out the cell if the text is found
+            ws.Cells(i, 1).Value = ""
+        End If
+    Next i
+End Sub
