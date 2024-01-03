@@ -1,0 +1,21 @@
+Sub DeleteColumnsAfterHeader()
+    Dim ws As Worksheet
+    Dim header As String
+    Dim lastCol As Integer
+
+    ' Set the worksheet and header
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    header = "YourHeader" ' Change "YourHeader" to the header you're looking for
+
+    ' Find the column number of the header
+    On Error Resume Next
+    lastCol = ws.Rows(1).Find(header, LookIn:=xlValues, lookat:=xlWhole).Column
+    On Error GoTo 0
+
+    ' Delete columns after the header
+    If lastCol > 0 Then
+        ws.Columns(lastCol + 1 & ":" & ws.Columns.Count).Delete
+    Else
+        MsgBox "Header not found!"
+    End If
+End Sub
