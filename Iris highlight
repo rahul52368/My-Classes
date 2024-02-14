@@ -1,0 +1,20 @@
+Sub HighlightCells()
+    Dim rng As Range
+    Dim cell As Range
+    Dim searchString As String
+    
+    ' Set the search string
+    searchString = "YourString"
+    
+    ' Set the range to the desired column
+    Set rng = Range("A1:A" & Cells(Rows.Count, "A").End(xlUp).Row)
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        ' Check if the cell value starts with the search string
+        If Left(cell.Value, Len(searchString)) = searchString Then
+            ' Highlight the cell
+            cell.Interior.Color = RGB(255, 255, 0) ' Yellow color
+        End If
+    Next cell
+End Sub
