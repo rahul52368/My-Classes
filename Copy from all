@@ -1,6 +1,7 @@
-Sub ReadFileFromAllFolders()
+Sub ReadLocationFileFromSubfolders()
     Dim objFSO As Object
     Dim objFolder As Object
+    Dim objSubFolder As Object
     Dim objFile As Object
     Dim strSourceFolderPath As String
     Dim strFileName As String
@@ -12,40 +13,41 @@ Sub ReadFileFromAllFolders()
     strSourceFolderPath = "C:\Your\Source\Folder\"
     
     ' Specify the file name to read
-    strFileName = "example.txt"
+    strFileName = "Location.txt"
     
     ' Create a FileSystemObject
     Set objFSO = CreateObject("Scripting.FileSystemObject")
-    
-    ' Get the folder object
-    Set objFolder = objFSO.GetFolder(strSourceFolderPath)
     
     ' Create a new workbook
     Set wb = Workbooks.Add
     Set ws = wb.Sheets(1)
     nextRow = 1
     
-    ' Loop through each file in the folder and its subfolders
-    For Each objFile In objFolder.Files
-        ' Check if the file name matches the specified file name
-        If objFile.Name = strFileName Then
-            ' Open the file and read its data
+    ' Get the folder object
+    Set objFolder = objFSO.GetFolder(strSourceFolderPath)
+    
+    ' Loop through each subfolder in the source folder
+    For Each objSubFolder In objFolder.SubFolders
+        ' Check if the Location.txt file exists in the subfolder
+        If objFSO.FileExists(objSubFolder.Path & "\" & strFileName) Then
+            ' Open the Location.txt file and read its data
             Dim fileContent As String
-            Open objFile.Path For Input As #1
+            Open objSubFolder.Path & "\" & strFileName For Input As #1
             fileContent = Input$(LOF(1), 1)
             Close #1
             
             ' Paste the data into the worksheet
-            ws.Cells(nextRow, 1).Value = objFile.Name
-            ws.Cells(nextRow + 1, 1).Value = fileContent
+            ws.Cells(nextRow, 1).Value = objSubFolder.Path
+            ws.Cells(nextRow, 2).Value = fileContent
             
             ' Move to the next row
-            nextRow = nextRow + 2
+            nextRow = nextRow + 1
         End If
-    Next objFile
+    Next objSubFolder
     
     ' Clean up
     Set objFSO = Nothing
     Set objFolder = Nothing
+    Set objSubFolder = Nothing
     Set objFile = Nothing
 End Sub
