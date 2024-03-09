@@ -1,0 +1,37 @@
+Sub DeleteFilesExceptContainingWord()
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objSubFolder As Object
+    Dim objFile As Object
+    Dim strFolderPath As String
+    Dim strKeyword As String
+    
+    ' Specify the folder path
+    strFolderPath = "C:\Your\Folder\Path\"
+    
+    ' Specify the keyword to identify files to keep
+    strKeyword = "word"
+    
+    ' Create a FileSystemObject
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Get the folder object
+    Set objFolder = objFSO.GetFolder(strFolderPath)
+    
+    ' Loop through each file in the folder and its subfolders
+    For Each objSubFolder In objFolder.SubFolders
+        For Each objFile In objSubFolder.Files
+            ' Check if the file name contains the keyword
+            If InStr(1, objFile.Name, strKeyword, vbTextCompare) = 0 Then
+                ' Delete the file
+                objFSO.DeleteFile objFile.Path
+            End If
+        Next objFile
+    Next objSubFolder
+    
+    ' Clean up
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set objSubFolder = Nothing
+    Set objFile = Nothing
+End Sub
