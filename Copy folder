@@ -1,0 +1,41 @@
+Sub CopyFoldersFromExcel()
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim ws As Worksheet
+    Dim strSourceFolderPath As String
+    Dim strDestinationFolderPath As String
+    Dim lastRow As Long
+    Dim i As Long
+    
+    ' Specify the source folder containing the list of folders to copy
+    strSourceFolderPath = "C:\Your\Source\Folder\"
+    
+    ' Specify the destination folder where folders will be copied
+    strDestinationFolderPath = "C:\Your\Destination\Folder\"
+    
+    ' Open the Excel workbook and specify the worksheet containing the folder names
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Update "Sheet1" to your worksheet name
+    
+    ' Find the last row with data in column A
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Create a FileSystemObject
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Loop through each folder name in the Excel worksheet
+    For i = 1 To lastRow
+        Dim folderName As String
+        folderName = Trim(ws.Cells(i, 1).Value)
+        
+        ' Check if the folder exists in the source path
+        If objFSO.FolderExists(strSourceFolderPath & folderName) Then
+            ' Copy the folder to the destination path
+            objFSO.CopyFolder strSourceFolderPath & folderName, strDestinationFolderPath & folderName
+        Else
+            MsgBox "Folder '" & folderName & "' does not exist in the source folder.", vbExclamation
+        End If
+    Next i
+    
+    ' Clean up
+    Set objFSO = Nothing
+End Sub
