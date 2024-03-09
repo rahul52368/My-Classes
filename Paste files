@@ -1,0 +1,42 @@
+Sub SearchAndCopyFiles()
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objSubFolder As Object
+    Dim objFile As Object
+    Dim strSourceFolderPath As String
+    Dim strDestinationFolderPath As String
+    Dim strKeyword As String
+    
+    ' Specify the source folder path
+    strSourceFolderPath = "C:\Your\Source\Folder\"
+    
+    ' Specify the destination folder path
+    strDestinationFolderPath = "C:\Your\Destination\Folder\"
+    
+    ' Specify the keyword to search for in file names
+    strKeyword = "word"
+    
+    ' Create a FileSystemObject
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Get the folder object
+    Set objFolder = objFSO.GetFolder(strSourceFolderPath)
+    
+    ' Loop through each subfolder in the source folder
+    For Each objSubFolder In objFolder.SubFolders
+        ' Loop through each file in the subfolder
+        For Each objFile In objSubFolder.Files
+            ' Check if the file name contains the keyword
+            If InStr(1, objFile.Name, strKeyword, vbTextCompare) > 0 Then
+                ' Copy the file to the destination folder
+                objFSO.CopyFile objFile.Path, strDestinationFolderPath & objFile.Name
+            End If
+        Next objFile
+    Next objSubFolder
+    
+    ' Clean up
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set objSubFolder = Nothing
+    Set objFile = Nothing
+End Sub
