@@ -1,23 +1,51 @@
-Sub DeleteColumnsAfterHeader()
-    Dim HeaderText As String
-    Dim LastColumn As Long
-    Dim Col As Long
+Sub ReadFilesInSubfolders()
+    Dim fso As Object
+    Dim folder As Object
+    Dim subfolder As Object
+    Dim file As Object
+    Dim text As String
+    Dim pasteRange As Range
+    Dim wb As Workbook
     
-    ' Set the header text to the one you want to search for
-    HeaderText = "YourHeader"  ' Change to your specific header
+    ' Set your workbook here
+    Set wb = ThisWorkbook
     
-    ' Find the column with the header text
-    On Error Resume Next
-    Col = Rows(1).Find(HeaderText, LookIn:=xlValues, LookAt:=xlWhole).Column
-    On Error GoTo 0
+    ' Set the range where you want to paste the data
+    Set pasteRange = wb.Sheets("Sheet1").Range("A1")
     
-    ' If the header is found, delete columns to the right of it
-    If Col > 0 Then
-        LastColumn = Cells(1, Columns.Count).End(xlToLeft).Column
-        For Col = Col + 1 To LastColumn
-            Columns(Col).Delete
-        Next Col
-    Else
-        MsgBox "Header not found!"
-    End If
+    ' Create a File System Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    ' Specify the main folder path
+    Set folder = fso.GetFolder("C:\MainFolder")
+    
+    ' Loop through all subfolders recursively
+    For Each subfolder In folder.subfolders
+        ' Loop through all files in the current subfolder
+        For Each file In subfolder.Files
+            ' Check if the file is the one you want to read (e.g., based on file extension or name)
+            If file.Name = "YourFileName.txt" Then
+                ' Open the file and read its content
+                text = ReadTextFile(file.Path)
+                
+                ' Paste the data below the last used cell in the specified range
+                pasteRange.End(xlDown).Offset(1).Value = text
+            End If
+        Next file
+    Next subfolder
 End Sub
+
+Function ReadTextFile(filePath As String) As String
+    Dim text As String
+    Dim fileStream As Object
+    
+    ' Read the content of the text file
+    Set fileStream = CreateObject("ADODB.Stream")
+    fileStream.Open
+    fileStream.LoadFromFile filePath
+    text = fileStream.ReadText
+    fileStream.Close
+    
+    ' Return the text content
+    ReadTextFile = text
+End Function
