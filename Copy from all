@@ -1,0 +1,51 @@
+Sub ReadFileFromAllFolders()
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objFile As Object
+    Dim strSourceFolderPath As String
+    Dim strFileName As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim nextRow As Long
+    
+    ' Specify the source folder path
+    strSourceFolderPath = "C:\Your\Source\Folder\"
+    
+    ' Specify the file name to read
+    strFileName = "example.txt"
+    
+    ' Create a FileSystemObject
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Get the folder object
+    Set objFolder = objFSO.GetFolder(strSourceFolderPath)
+    
+    ' Create a new workbook
+    Set wb = Workbooks.Add
+    Set ws = wb.Sheets(1)
+    nextRow = 1
+    
+    ' Loop through each file in the folder and its subfolders
+    For Each objFile In objFolder.Files
+        ' Check if the file name matches the specified file name
+        If objFile.Name = strFileName Then
+            ' Open the file and read its data
+            Dim fileContent As String
+            Open objFile.Path For Input As #1
+            fileContent = Input$(LOF(1), 1)
+            Close #1
+            
+            ' Paste the data into the worksheet
+            ws.Cells(nextRow, 1).Value = objFile.Name
+            ws.Cells(nextRow + 1, 1).Value = fileContent
+            
+            ' Move to the next row
+            nextRow = nextRow + 2
+        End If
+    Next objFile
+    
+    ' Clean up
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set objFile = Nothing
+End Sub
