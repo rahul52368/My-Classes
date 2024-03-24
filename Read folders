@@ -1,0 +1,37 @@
+Sub ListFolders()
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objSubFolder As Object
+    Dim selectedFolder As String
+
+    ' Create a File System Object
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Open a dialog box for the user to select a folder
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        If .Show = -1 Then ' If the user selects a folder
+            selectedFolder = .SelectedItems(1)
+        Else
+            Exit Sub ' Exit the sub if the user cancels
+        End If
+    End With
+    
+    ' Check if the selected folder exists
+    If objFSO.FolderExists(selectedFolder) Then
+        ' Set the selected folder as the target folder
+        Set objFolder = objFSO.GetFolder(selectedFolder)
+
+        ' Loop through each subfolder in the selected folder
+        For Each objSubFolder In objFolder.SubFolders
+            ' Print the name of each subfolder
+            Debug.Print objSubFolder.Name
+        Next objSubFolder
+    Else
+        MsgBox "Selected folder does not exist."
+    End If
+
+    ' Clean up
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set objSubFolder = Nothing
+End Sub
