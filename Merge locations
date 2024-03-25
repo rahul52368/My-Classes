@@ -1,0 +1,61 @@
+Sub ReadFilesInSubfolders()
+    Dim fso As Object
+    Dim folder As Object
+    Dim subfolder As Object
+    Dim file As Object
+    Dim text As String
+    Dim pasteRange As Range
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    
+    ' Set your workbook here
+    Set wb = ThisWorkbook
+    
+    ' Set the worksheet where you want to paste the data
+    Set ws = wb.Sheets("Sheet1")
+    
+    ' Set the range where you want to paste the data
+    Set pasteRange = ws.Range("A1")
+    
+    ' Create a File System Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    ' Specify the main folder path
+    Set folder = fso.GetFolder("C:\MainFolder")
+    
+    ' Loop through all subfolders recursively
+    For Each subfolder In folder.subfolders
+        ' Loop through all files in the current subfolder
+        For Each file In subfolder.Files
+            ' Check if the file is the one you want to read (e.g., based on file extension or name)
+            If file.Name = "YourFileName.xlsx" Then
+                ' Open the Excel file
+                Dim srcWb As Workbook
+                Set srcWb = Workbooks.Open(file.Path)
+                
+                ' Read the content of the Excel file
+                text = ReadExcelFile(srcWb)
+                
+                ' Close the Excel file without saving changes
+                srcWb.Close False
+                
+                ' Paste the data below the last used cell in the specified range
+                pasteRange.End(xlDown).Offset(1).Value = text
+            End If
+        Next file
+    Next subfolder
+End Sub
+
+Function ReadExcelFile(srcWb As Workbook) As String
+    Dim ws As Worksheet
+    Dim data As String
+    
+    ' Loop through all sheets in the workbook
+    For Each ws In srcWb.Sheets
+        ' Read data from each sheet and concatenate
+        data = data & ws.UsedRange.Value & vbCrLf
+    Next ws
+    
+    ' Return the concatenated data
+    ReadExcelFile = data
+End Function
