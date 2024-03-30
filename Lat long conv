@@ -1,0 +1,29 @@
+Sub ConvertColumnDMSToDecimal()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    
+    ' Specify the worksheet containing the data
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Find the last row in the column
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row ' Change "A" to your column letter
+    
+    ' Loop through each row in the column starting from the second row
+    For i = 2 To lastRow ' Assuming the first row contains headers, adjust if necessary
+        ' Convert degrees, minutes, seconds to decimal degrees
+        ws.Cells(i, "A").Value = ConvertDMSToDecimal(ws.Cells(i, "A").Value, ws.Cells(i, "B").Value, ws.Cells(i, "C").Value, ws.Cells(i, "D").Value)
+    Next i
+End Sub
+
+Function ConvertDMSToDecimal(degrees As Double, minutes As Double, seconds As Double, direction As String) As Double
+    Dim decimalValue As Double
+    
+    decimalValue = degrees + (minutes / 60) + (seconds / 3600)
+    
+    If UCase(direction) = "S" Or UCase(direction) = "W" Then
+        decimalValue = decimalValue * -1
+    End If
+    
+    ConvertDMSToDecimal = decimalValue
+End Function
