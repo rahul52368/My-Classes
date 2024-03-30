@@ -1,0 +1,38 @@
+Sub ConvertColumnDMSToDecimal()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    
+    ' Specify the worksheet containing the data
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Find the last row in the column
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row ' Change "A" to your column letter
+    
+    ' Loop through each row in the column starting from the second row
+    For i = 2 To lastRow ' Assuming the first row contains headers, adjust if necessary
+        ' Convert latitude degrees, minutes, seconds to decimal degrees
+        ws.Cells(i, "A").Value = ConvertDMSToDecimal(ws.Cells(i, "A").Value)
+    Next i
+End Sub
+
+Function ConvertDMSToDecimal(latitude As String) As Double
+    Dim degrees As Double
+    Dim minutes As Double
+    Dim seconds As Double
+    Dim direction As String
+    
+    ' Split the latitude value into degrees, minutes, seconds, and direction
+    degrees = Val(Split(latitude, "°")(0))
+    minutes = Val(Split(Split(latitude, "°")(1), "'")(0))
+    seconds = Val(Split(Split(latitude, "'")(1), Chr(34))(0))
+    direction = Right(latitude, 1)
+    
+    ' Convert degrees, minutes, seconds to decimal degrees
+    ConvertDMSToDecimal = degrees + (minutes / 60) + (seconds / 3600)
+    
+    ' Adjust for direction (N/S)
+    If UCase(direction) = "S" Then
+        ConvertDMSToDecimal = ConvertDMSToDecimal * -1
+    End If
+End Function
