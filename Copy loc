@@ -1,0 +1,66 @@
+Sub CopyLocationSheetFromAllFiles(ByVal folderPath As String, ByVal outputPath As String)
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objFile As Object
+    Dim subFolder As Object
+    Dim outputWorkbook As Workbook
+    Dim outputWorksheet As Worksheet
+    Dim nextRow As Long
+    
+    ' Create a File System Object
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Open the output workbook
+    Set outputWorkbook = Workbooks.Add
+    Set outputWorksheet = outputWorkbook.Sheets(1)
+    
+    ' Set the initial row for output
+    nextRow = 1
+    
+    ' Loop through each file in the folder
+    Set objFolder = objFSO.GetFolder(folderPath)
+    For Each objFile In objFolder.Files
+        ' Open each workbook
+        Dim wb As Workbook
+        Set wb = Workbooks.Open(objFile.Path)
+        
+        ' Check if the location sheet exists
+        Dim locationSheet As Worksheet
+        On Error Resume Next
+        Set locationSheet = wb.Sheets("Location")
+        On Error GoTo 0
+        
+        ' If location sheet exists, copy its content
+        If Not locationSheet Is Nothing Then
+            locationSheet.UsedRange.Copy outputWorksheet.Cells(nextRow, 1)
+            nextRow = nextRow + locationSheet.UsedRange.Rows.Count + 1
+        End If
+        
+        ' Close the opened workbook
+        wb.Close False
+    Next objFile
+    
+    ' Save and close the output workbook
+    outputWorkbook.SaveAs outputPath
+    outputWorkbook.Close
+    
+    ' Release objects
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set objFile = Nothing
+    Set subFolder = Nothing
+    Set outputWorksheet = Nothing
+    Set outputWorkbook = Nothing
+End Sub
+
+Sub TestCopyLocationSheetFromAllFiles()
+    Dim folderPath As String
+    Dim outputPath As String
+    
+    ' Specify the folder path and output file path
+    folderPath = "C:\Your\Folder\Path" ' Replace with the actual path of the folder
+    outputPath = "C:\Output\File\Path.xlsx" ' Specify the output file path
+    
+    ' Call the main function
+    CopyLocationSheetFromAllFiles folderPath, outputPath
+End Sub
