@@ -1,0 +1,43 @@
+Sub ListFilesInFolder(ByVal folderPath As String, ByVal startCell As Range)
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objFile As Object
+
+    Dim subFolder As Object
+    Dim currentRow As Long
+    
+    ' Create a File System Object
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    
+    ' Get the folder object
+    Set objFolder = objFSO.GetFolder(folderPath)
+    
+    ' Start writing from the specified cell
+    currentRow = startCell.Row
+    
+    ' Loop through each file in the folder
+    For Each objFile In objFolder.Files
+        startCell.Offset(currentRow - startCell.Row, 0).Value = objFile.Path
+        currentRow = currentRow + 1
+    Next objFile
+    
+    ' Recursively call the function for each subfolder
+    For Each subFolder In objFolder.SubFolders
+        ListFilesInFolder subFolder.Path, startCell.Offset(currentRow - startCell.Row, 0)
+        currentRow = currentRow + 1
+    Next subFolder
+    
+    ' Release objects
+    Set objFSO = Nothing
+    Set objFolder = Nothing
+    Set objFile = Nothing
+    Set subFolder = Nothing
+End Sub
+
+Sub TestListFilesInFolder()
+    Dim folderPath As String
+    Dim startCell As Range
+    Set startCell = Range("A1") ' Change the cell reference as needed
+    folderPath = "C:\Your\Folder\Path"
+    ListFilesInFolder folderPath, startCell
+End Sub
