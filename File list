@@ -1,8 +1,7 @@
-Sub ListFilesInFolder(ByVal folderPath As String, ByVal startCell As Range)
+Sub ListAllFilesInFolder(ByVal folderPath As String, ByVal startCell As Range)
     Dim objFSO As Object
     Dim objFolder As Object
     Dim objFile As Object
-
     Dim subFolder As Object
     Dim currentRow As Long
     
@@ -23,8 +22,8 @@ Sub ListFilesInFolder(ByVal folderPath As String, ByVal startCell As Range)
     
     ' Recursively call the function for each subfolder
     For Each subFolder In objFolder.SubFolders
-        ListFilesInFolder subFolder.Path, startCell.Offset(currentRow - startCell.Row, 0)
-        currentRow = currentRow + 1
+        ListAllFilesInFolder subFolder.Path, startCell.Offset(currentRow - startCell.Row, 0)
+        currentRow = startCell.End(xlDown).Row + 1 ' Move to the next empty row
     Next subFolder
     
     ' Release objects
@@ -34,10 +33,10 @@ Sub ListFilesInFolder(ByVal folderPath As String, ByVal startCell As Range)
     Set subFolder = Nothing
 End Sub
 
-Sub TestListFilesInFolder()
+Sub TestListAllFilesInFolder()
     Dim folderPath As String
     Dim startCell As Range
     Set startCell = Range("A1") ' Change the cell reference as needed
-    folderPath = "C:\Your\Folder\Path"
-    ListFilesInFolder folderPath, startCell
+    folderPath = "C:\Your\Folder\Path" ' Replace with the actual path of the folder
+    ListAllFilesInFolder folderPath, startCell
 End Sub
