@@ -1,0 +1,54 @@
+Sub ConsolidateLocationData()
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim folderPath As String
+    Dim fso As Object
+    Dim fld As Object
+    Dim file As Object
+    Dim dataSheet As Worksheet
+    Dim lastRow As Long
+    
+    ' Create a new workbook for consolidation
+    Set wb = Workbooks.Add
+    Set dataSheet = wb.Sheets(1)
+    dataSheet.Name = "Consolidated_Location_Data"
+    
+    ' Specify the folder path
+    folderPath = "C:\Your\Folder\Path\" ' Update with your folder path
+    
+    ' Initialize FileSystemObject
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set fld = fso.GetFolder(folderPath)
+    
+    ' Call recursive function to process all files in the folder and subfolders
+    ProcessFolder fld, dataSheet
+    
+    ' Adjust column widths if needed
+    dataSheet.Columns.AutoFit
+    
+    MsgBox "Consolidation complete.", vbInformation
+End Sub
+
+Sub ProcessFolder(folder As Object, dataSheet As Worksheet)
+    Dim file As Object
+    Dim subFolder As Object
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    
+    For Each file In folder.Files
+        If Right(file.Name, 5) = ".xlsx" Then ' Adjust file extension as needed
+            ' Open the workbook
+            Workbooks.Open file.Path
+            ' Copy data from location sheet (assuming it's named 'location')
+            Set ws = ThisWorkbook.Sheets("location")
+            lastRow = dataSheet.Cells(dataSheet.Rows.Count, "A").End(xlUp).Row
+            ws.UsedRange.Copy dataSheet.Cells(lastRow + 1, 1)
+            ' Close the opened workbook
+            ActiveWorkbook.Close False
+        End If
+    Next file
+    
+    For Each subFolder In folder.SubFolders
+        ProcessFolder subFolder, dataSheet
+    Next subFolder
+End Sub
