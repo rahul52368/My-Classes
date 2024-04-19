@@ -60,4 +60,15 @@ Sub ReadFilesAndPasteToExcel()
     Set ws = Nothing
 End Sub
 
-Sub ProcessSubFolders(ByRef subFld As Object, ByRef ws As Worksheet,
+Sub ProcessSubFolders(ByRef subFld As Object, ByRef ws As Worksheet, ByRef i As Integer)
+    Dim file As Object
+    For Each file In subFld.Files
+        ws.Cells(i, 1).Value = file.Path
+        i = i + 1
+    Next file
+    
+    Dim subSubFld As Object
+    For Each subSubFld In subFld.SubFolders
+        Call ProcessSubFolders(subSubFld, ws, i)
+    Next subSubFld
+End Sub
