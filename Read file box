@@ -1,9 +1,5 @@
 Sub ReadFilesAndPasteToExcel()
     Dim fso As Object
-    Dim fld As Object
-    Dim subFld As Object
-    Dim file As Object
-    Dim i As Integer
     Dim selectedFolder As String
     
     ' Prompt the user to select a folder
@@ -27,23 +23,14 @@ Sub ReadFilesAndPasteToExcel()
     ws.Cells(1, 1).Value = "File Paths"
     
     ' Initialize counter for row number
+    Dim i As Long
     i = 2
     
     ' Create a FileSystemObject
     Set fso = CreateObject("Scripting.FileSystemObject")
     
-    ' Get the folder object
-    Set fld = fso.GetFolder(selectedFolder)
-    
-    ' Loop through all files in the folder and its subfolders
-    For Each file In fld.Files
-        ws.Cells(i, 1).Value = file.Path
-        i = i + 1
-    Next file
-    
-    For Each subFld In fld.SubFolders
-        Call ProcessSubFolders(subFld, ws, i)
-    Next subFld
+    ' Recursively loop through all files in the selected folder and its subfolders
+    ListFiles fso.GetFolder(selectedFolder), ws, i
     
     ' Auto-fit columns for better readability
     ws.Columns("A:A").AutoFit
@@ -53,22 +40,22 @@ Sub ReadFilesAndPasteToExcel()
     
     ' Release objects
     Set fso = Nothing
-    Set fld = Nothing
-    Set subFld = Nothing
-    Set file = Nothing
     Set wb = Nothing
     Set ws = Nothing
 End Sub
 
-Sub ProcessSubFolders(ByRef subFld As Object, ByRef ws As Worksheet, ByRef i As Integer)
+Sub ListFiles(folder As Object, ws As Worksheet, ByRef i As Long)
     Dim file As Object
-    For Each file In subFld.Files
+    Dim subFolder As Object
+    
+    ' List files in the current folder
+    For Each file In folder.Files
         ws.Cells(i, 1).Value = file.Path
         i = i + 1
     Next file
     
-    Dim subSubFld As Object
-    For Each subSubFld In subFld.SubFolders
-        Call ProcessSubFolders(subSubFld, ws, i)
-    Next subSubFld
+    ' Recursively list files in subfolders
+    For Each subFolder In folder.SubFolders
+        ListFiles subFolder, ws, i
+    Next subFolder
 End Sub
