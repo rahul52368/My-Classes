@@ -1,0 +1,63 @@
+Sub ReadFilesAndPasteToExcel()
+    Dim fso As Object
+    Dim fld As Object
+    Dim subFld As Object
+    Dim file As Object
+    Dim i As Integer
+    Dim selectedFolder As String
+    
+    ' Prompt the user to select a folder
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .Title = "Select a Folder"
+        .AllowMultiSelect = False
+        If .Show = -1 Then
+            selectedFolder = .SelectedItems(1)
+        Else
+            Exit Sub ' User canceled
+        End If
+    End With
+    
+    ' Create a new Excel workbook
+    Dim wb As Workbook
+    Set wb = Workbooks.Add
+    Dim ws As Worksheet
+    Set ws = wb.Sheets(1)
+    
+    ' Set up Excel sheet headers
+    ws.Cells(1, 1).Value = "File Paths"
+    
+    ' Initialize counter for row number
+    i = 2
+    
+    ' Create a FileSystemObject
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
+    ' Get the folder object
+    Set fld = fso.GetFolder(selectedFolder)
+    
+    ' Loop through all files in the folder and its subfolders
+    For Each file In fld.Files
+        ws.Cells(i, 1).Value = file.Path
+        i = i + 1
+    Next file
+    
+    For Each subFld In fld.SubFolders
+        Call ProcessSubFolders(subFld, ws, i)
+    Next subFld
+    
+    ' Auto-fit columns for better readability
+    ws.Columns("A:A").AutoFit
+    
+    ' Notify the user
+    MsgBox "Files listed successfully.", vbInformation
+    
+    ' Release objects
+    Set fso = Nothing
+    Set fld = Nothing
+    Set subFld = Nothing
+    Set file = Nothing
+    Set wb = Nothing
+    Set ws = Nothing
+End Sub
+
+Sub ProcessSubFolders(ByRef subFld As Object, ByRef ws As Worksheet,
