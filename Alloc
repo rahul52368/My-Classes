@@ -1,0 +1,37 @@
+Sub FilterAndPaste()
+    Dim keyword As String
+    Dim rng As Range
+    Dim filteredRange As Range
+    Dim pasteSheet As Worksheet
+    Dim lastRow As Long
+    
+    ' Set the keyword to filter
+    keyword = "YourKeyword"
+    
+    ' Set the range to search for the keyword (change Sheet1 to your source sheet name)
+    Set rng = ThisWorkbook.Sheets("Sheet1").Range("A1:A100") ' Adjust the range as needed
+    
+    ' Set the sheet to paste the filtered data (change Sheet2 to your destination sheet name)
+    Set pasteSheet = ThisWorkbook.Sheets("Sheet2")
+    
+    ' Clear existing data in Sheet2
+    pasteSheet.Cells.Clear
+    
+    ' Filter the range based on the keyword
+    rng.AutoFilter Field:=1, Criteria1:="*" & keyword & "*", Operator:=xlFilterValues
+    
+    ' Set the filtered range (excluding header)
+    Set filteredRange = rng.Offset(1, 0).SpecialCells(xlCellTypeVisible)
+    
+    ' Copy the filtered range and paste it into Sheet2 starting from cell A1
+    filteredRange.Copy Destination:=pasteSheet.Range("A1")
+    
+    ' Remove the filter
+    rng.AutoFilter
+    
+    ' Autofit columns in Sheet2 (optional)
+    pasteSheet.Columns.AutoFit
+    
+    ' Notify user
+    MsgBox "Data filtered and pasted successfully!", vbInformation
+End Sub
