@@ -1,0 +1,14 @@
+Sub AddSheetIfNotExist()
+    Dim ws As Worksheet
+    Dim sheetName As String
+    
+    sheetName = "NewSheet" ' Change to the name you want
+    
+    On Error Resume Next
+    Set ws = Worksheets(sheetName)
+    On Error GoTo 0
+    
+    If ws Is Nothing Then
+        Sheets.Add(After:=Sheets(Sheets.Count)).Name = sheetName
+    End If
+End Sub
