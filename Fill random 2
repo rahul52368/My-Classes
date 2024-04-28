@@ -1,31 +1,35 @@
-Sub FillRandomlyUntilLastValue()
-    Dim rngSourceA As Range
+Sub FillRandomlyUntilRow1000()
     Dim rngSourceC As Range
     Dim rngDest As Range
-    Dim i As Integer
-    Dim randIndex As Integer
-    Dim lastRow As Long
+    Dim i As Long
+    Dim randIndex As Long
+    Dim lastRowC As Long
     
-    ' Find the last row of column A
-    lastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    ' Find the last row of column C
+    lastRowC = Cells(Rows.Count, 3).End(xlUp).Row
     
-    ' Set the range for the source columns
-    Set rngSourceA = Range("A1:A" & lastRow)
-    Set rngSourceC = Range("C1:C" & lastRow)
+    ' Set the range for the source column C
+    Set rngSourceC = Range("C1:C" & lastRowC)
     
-    ' Clear previous data in destination column
+    ' Clear previous data in destination column B
     Range("B:B").Clear
     
-    ' Set the range for the destination column
+    ' Set the range for the destination column B
     Set rngDest = Range("B1")
     
-    ' Fill randomly in destination column until last value of source column A is reached
-    For i = 1 To lastRow
-        randIndex = Int((rngSourceA.Rows.Count * Rnd) + 1)
-        If rngSourceA.Cells(randIndex, 1).Value <> "" Then
-            rngDest.Value = rngSourceC.Cells(randIndex, 1).Value
-            Set rngDest = rngDest.Offset(1, 0)
-            rngSourceA.Cells(randIndex, 1).ClearContents ' Clear the used value from column A
+    ' Fill randomly in destination column B until row 1000 is reached or until values in column C are exhausted
+    For i = 1 To 1000
+        If i <= lastRowC Then
+            randIndex = Int((rngSourceC.Rows.Count * Rnd) + 1)
+            If rngSourceC.Cells(randIndex, 1).Value <> "" Then
+                rngDest.Value = rngSourceC.Cells(randIndex, 1).Value
+                Set rngDest = rngDest.Offset(1, 0)
+                rngSourceC.Cells(randIndex, 1).ClearContents ' Clear the used value from column C
+            Else
+                Exit For ' Exit loop if all values from column C have been used
+            End If
+        Else
+            Exit For ' Exit loop if row 1000 is reached
         End If
     Next i
 End Sub
