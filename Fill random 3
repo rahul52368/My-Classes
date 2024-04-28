@@ -1,0 +1,26 @@
+Sub FillRandomlyUntilRow1000()
+    Dim rngSourceC As Range
+    Dim rngDest As Range
+    Dim i As Long
+    Dim randIndex As Long
+    Dim lastRowC As Long
+    
+    ' Find the last row of column C
+    lastRowC = Cells(Rows.Count, 3).End(xlUp).Row
+    
+    ' Set the range for the source column C
+    Set rngSourceC = Range("C1:C" & lastRowC)
+    
+    ' Clear previous data in destination column B
+    Range("B:B").Clear
+    
+    ' Set the range for the destination column B
+    Set rngDest = Range("B1")
+    
+    ' Fill randomly in destination column B until row 1000 is reached
+    For i = 1 To 1000
+        randIndex = Int((rngSourceC.Rows.Count * Rnd) + 1)
+        rngDest.Value = rngSourceC.Cells(randIndex, 1).Value
+        Set rngDest = rngDest.Offset(1, 0)
+    Next i
+End Sub
