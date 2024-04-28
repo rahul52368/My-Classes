@@ -1,0 +1,52 @@
+Sub FillRandomlyUntilRow1000()
+    Dim rngSourceC As Range
+    Dim rngDest As Range
+    Dim i As Long
+    Dim randIndex As Long
+    Dim lastRowC As Long
+    Dim valueCount As Long
+    Dim valueIndex As Long
+    Dim shuffledValues() As Variant
+    
+    ' Find the last row of column C
+    lastRowC = Cells(Rows.Count, 3).End(xlUp).Row
+    
+    ' Set the range for the source column C
+    Set rngSourceC = Range("C1:C" & lastRowC)
+    
+    ' Clear previous data in destination column B
+    Range("B:B").Clear
+    
+    ' Set the range for the destination column B
+    Set rngDest = Range("B1")
+    
+    ' Get the count of unique values in column C
+    valueCount = Application.WorksheetFunction.CountA(rngSourceC)
+    
+    ' Fill an array with unique values from column C
+    ReDim shuffledValues(1 To valueCount)
+    For i = 1 To valueCount
+        shuffledValues(i) = rngSourceC.Cells(i, 1).Value
+    Next i
+    
+    ' Shuffle the array of unique values
+    For i = valueCount To 2 Step -1
+        randIndex = Int((i - 1) * Rnd) + 1
+        Dim temp As Variant
+        temp = shuffledValues(i)
+        shuffledValues(i) = shuffledValues(randIndex)
+        shuffledValues(randIndex) = temp
+    Next i
+    
+    ' Fill randomly in destination column B until row 1000 is reached
+    valueIndex = 1
+    For i = 1 To 1000
+        ' If all values have been used, start from the beginning of the shuffled array
+        If valueIndex > valueCount Then
+            valueIndex = 1
+        End If
+        rngDest.Value = shuffledValues(valueIndex)
+        Set rngDest = rngDest.Offset(1, 0)
+        valueIndex = valueIndex + 1
+    Next i
+End Sub
