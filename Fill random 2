@@ -1,0 +1,24 @@
+Sub FillRandomlyUntilLastValue()
+    Dim rngSource As Range
+    Dim rngDest As Range
+    Dim i As Integer
+    Dim randIndex As Integer
+    
+    ' Set the range for the source column
+    Set rngSource = Range("A1:A" & Cells(Rows.Count, 1).End(xlUp).Row)
+    
+    ' Clear previous data in destination column
+    Range("B:B").Clear
+    
+    ' Set the range for the destination column
+    Set rngDest = Range("B1")
+    
+    ' Fill randomly in destination column until last value of source column is reached
+    For i = 1 To rngSource.Rows.Count
+        randIndex = Int((rngSource.Rows.Count * Rnd) + 1)
+        If rngSource.Cells(randIndex, 1).Value <> "" Then
+            rngDest.Value = rngSource.Cells(randIndex, 1).Offset(0, 2).Value ' Offset by 2 columns to get values from column C
+            Set rngDest = rngDest.Offset(1, 0)
+        End If
+    Next i
+End Sub
