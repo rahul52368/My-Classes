@@ -1,0 +1,33 @@
+# Load required libraries
+library(ggplot2)
+
+# Sample data
+model1 <- data.frame(
+  coef = c(0.5, -0.3, 0.2),
+  conf.low = c(0.3, -0.4, 0.1),
+  conf.high = c(0.7, -0.2, 0.3),
+  variable = c("Variable1", "Variable2", "Variable3")
+)
+
+model2 <- data.frame(
+  coef = c(0.4, -0.2, 0.1),
+  conf.low = c(0.2, -0.3, 0.0),
+  conf.high = c(0.6, -0.1, 0.2),
+  variable = c("Variable1", "Variable2", "Variable3")
+)
+
+# Combine data
+combined_data <- rbind(
+  data.frame(model = "Model1", model1),
+  data.frame(model = "Model2", model2)
+)
+
+# Create forest plot
+ggplot(combined_data, aes(x = coef, y = variable, xmin = conf.low, xmax = conf.high)) +
+  geom_point(aes(color = model), size = 3) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0) +
+  theme_minimal() +
+  xlab("Coefficient") +
+  ylab("Variable") +
+  ggtitle("Forest Plot of Two Models") +
+  theme(legend.title = element_blank())
