@@ -1,0 +1,45 @@
+Sub FilterAndDeleteBlanksFromFilteredData()
+    Dim ws As Worksheet
+    Dim filterColumn As String
+    Dim filterValue As String
+    Dim blankColumn As String
+    Dim lastRow As Long
+    Dim i As Long
+    Dim visibleRange As Range
+    Dim cell As Range
+
+    ' Set worksheet and parameters
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    filterColumn = "A" ' Column to filter by value (e.g., "A")
+    filterValue = "YourValue" ' Value to filter by
+    blankColumn = "B" ' Column to check for blanks (e.g., "B")
+
+    ' Remove any existing filters
+    If ws.AutoFilterMode Then
+        ws.AutoFilterMode = False
+    End If
+
+    ' Get the last row in the sheet
+    lastRow = ws.Cells(ws.Rows.Count, filterColumn).End(xlUp).Row
+
+    ' Apply filter to the column
+    ws.Range(ws.Cells(1, filterColumn), ws.Cells(lastRow, filterColumn)).AutoFilter Field:=1, Criteria1:=filterValue
+
+    ' Define the visible range after filtering
+    On Error Resume Next
+    Set visibleRange = ws.Range(ws.Cells(2, blankColumn), ws.Cells(lastRow, blankColumn)).SpecialCells(xlCellTypeVisible)
+    On Error GoTo 0
+
+    ' Check if there are any visible cells
+    If Not visibleRange Is Nothing Then
+        ' Loop through the visible cells and delete rows with blanks
+        For Each cell In visibleRange
+            If cell.Value = "" Then
+                cell.EntireRow.Delete
+            End If
+        Next cell
+    End If
+
+    ' Remove the filter
+    ws.AutoFilterMode = False
+End Sub
