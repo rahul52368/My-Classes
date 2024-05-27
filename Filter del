@@ -1,0 +1,35 @@
+Sub FilterAndDeleteBlanks()
+    Dim ws As Worksheet
+    Dim filterColumn As String
+    Dim filterValue As String
+    Dim blankColumn As String
+    Dim lastRow As Long
+    Dim i As Long
+
+    ' Set worksheet and parameters
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    filterColumn = "A" ' Column to filter by value (e.g., "A")
+    filterValue = "YourValue" ' Value to filter by
+    blankColumn = "B" ' Column to check for blanks (e.g., "B")
+
+    ' Remove any existing filters
+    If ws.AutoFilterMode Then
+        ws.AutoFilterMode = False
+    End If
+
+    ' Get the last row in the sheet
+    lastRow = ws.Cells(ws.Rows.Count, filterColumn).End(xlUp).Row
+
+    ' Apply filter to the column
+    ws.Range(ws.Cells(1, filterColumn), ws.Cells(lastRow, filterColumn)).AutoFilter Field:=1, Criteria1:=filterValue
+
+    ' Loop through the rows in reverse to delete rows with blanks in the blankColumn
+    For i = lastRow To 2 Step -1 ' Assuming row 1 is the header row
+        If ws.Cells(i, blankColumn).Value = "" Then
+            ws.Rows(i).Delete
+        End If
+    Next i
+
+    ' Remove the filter
+    ws.AutoFilterMode = False
+End Sub
