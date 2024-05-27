@@ -1,0 +1,48 @@
+Sub FilterAndDeleteNonBlanksFromFilteredData()
+    Dim ws As Worksheet
+    Dim filterColumn As String
+    Dim filterValue As String
+    Dim checkColumn As String
+    Dim lastRow As Long
+    Dim visibleRange As Range
+    Dim cell As Range
+    Dim rng As Range
+    Dim i As Long
+
+    ' Set worksheet and parameters
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    filterColumn = "A" ' Column to filter by value (e.g., "A")
+    filterValue = "YourValue" ' Value to filter by
+    checkColumn = "B" ' Column to check for non-blanks (e.g., "B")
+
+    ' Remove any existing filters
+    If ws.AutoFilterMode Then
+        ws.AutoFilterMode = False
+    End If
+
+    ' Get the last row in the sheet
+    lastRow = ws.Cells(ws.Rows.Count, filterColumn).End(xlUp).Row
+
+    ' Apply filter to the column
+    ws.Range(ws.Cells(1, filterColumn), ws.Cells(lastRow, filterColumn)).AutoFilter Field:=1, Criteria1:=filterValue
+
+    ' Define the visible range after filtering
+    On Error Resume Next
+    Set visibleRange = ws.Range(ws.Cells(2, checkColumn), ws.Cells(lastRow, checkColumn)).SpecialCells(xlCellTypeVisible)
+    On Error GoTo 0
+
+    ' Check if there are any visible cells
+    If Not visibleRange Is Nothing Then
+        ' Loop through the visible cells in reverse order and delete rows with non-blanks
+        For i = visibleRange.Areas.Count To 1 Step -1
+            For Each rng In visibleRange.Areas(i).Rows
+                If ws.Cells(rng.Row, checkColumn).Value <> "" Then
+                    rng.EntireRow.Delete
+                End If
+            Next rng
+        Next i
+    End If
+
+    ' Remove the filter
+    ws.AutoFilterMode = False
+End Sub
