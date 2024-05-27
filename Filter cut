@@ -1,0 +1,52 @@
+Sub FilterAndMoveData()
+    Dim wsSource As Worksheet
+    Dim wsTarget As Worksheet
+    Dim filterColumn As String
+    Dim filterValues As Variant
+    Dim lastRow As Long
+    Dim targetLastRow As Long
+
+    ' Set worksheets
+    Set wsSource = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your source sheet name
+    Set wsTarget = ThisWorkbook.Sheets("Sheet2") ' Change "Sheet2" to your target sheet name
+
+    ' Set filter parameters
+    filterColumn = "A" ' Column to filter by value (e.g., "A")
+    filterValues = Array("Value1", "Value2", "Value3") ' Values to filter by
+
+    ' Remove any existing filters
+    If wsSource.AutoFilterMode Then
+        wsSource.AutoFilterMode = False
+    End If
+
+    ' Get the last row in the source sheet
+    lastRow = wsSource.Cells(wsSource.Rows.Count, filterColumn).End(xlUp).Row
+
+    ' Apply filter to the column
+    wsSource.Range(wsSource.Cells(1, filterColumn), wsSource.Cells(lastRow, filterColumn)).AutoFilter Field:=1, Criteria1:=filterValues, Operator:=xlFilterValues
+
+    ' Check if there are any visible cells after filtering
+    On Error Resume Next
+    Set visibleRange = wsSource.Range(wsSource.Cells(2, 1), wsSource.Cells(lastRow, wsSource.Columns.Count)).SpecialCells(xlCellTypeVisible)
+    On Error GoTo 0
+
+    If Not visibleRange Is Nothing Then
+        ' Cut the visible rows
+        visibleRange.Copy
+
+        ' Find the last row in the target sheet
+        targetLastRow = wsTarget.Cells(wsTarget.Rows.Count, "A").End(xlUp).Row + 1
+
+        ' Paste the data into the target sheet
+        wsTarget.Cells(targetLastRow, 1).PasteSpecial Paste:=xlPasteAll
+
+        ' Delete the original rows
+        visibleRange.EntireRow.Delete
+    End If
+
+    ' Remove the filter
+    wsSource.AutoFilterMode = False
+
+    ' Clear the clipboard
+    Application.CutCopyMode = False
+End Sub
