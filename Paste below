@@ -1,0 +1,36 @@
+Sub CopyAndPasteBelow()
+
+    ' Define the source and destination sheets
+    Dim srcSheet As Worksheet
+    Dim destSheet As Worksheet
+    
+    ' Change these sheet names to your actual sheet names
+    Set srcSheet = ThisWorkbook.Sheets("SourceSheetName")
+    Set destSheet = ThisWorkbook.Sheets("DestinationSheetName")
+    
+    ' Find the last row with data on the source sheet
+    Dim lastSrcRow As Long
+    lastSrcRow = srcSheet.Cells(srcSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Find the last row with data on the destination sheet
+    Dim lastDestRow As Long
+    lastDestRow = destSheet.Cells(destSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Define the range to copy from the source sheet
+    ' Adjust the column range if needed
+    Dim copyRange As Range
+    Set copyRange = srcSheet.Range("A1:Z" & lastSrcRow)
+    
+    ' Define the destination range
+    Dim pasteRange As Range
+    Set pasteRange = destSheet.Range("A" & lastDestRow + 1)
+    
+    ' Copy and paste the data
+    copyRange.Copy Destination:=pasteRange
+
+    ' Optional: Clear the clipboard to free up memory
+    Application.CutCopyMode = False
+
+    MsgBox "Data copied successfully!"
+
+End Sub
