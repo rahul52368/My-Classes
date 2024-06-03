@@ -1,0 +1,20 @@
+Sub DeleteRowsBelowDataInColumnA()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim totalRows As Long
+    
+    ' Set the worksheet you are working on
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+
+    ' Find the last row with data in column A
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Find the total number of rows in the worksheet
+    totalRows = ws.Rows.Count
+    
+    ' Check if there are rows to delete
+    If lastRow < totalRows Then
+        ' Delete all rows below the last data row in column A
+        ws.Rows(lastRow + 1 & ":" & totalRows).Delete
+    End If
+End Sub
