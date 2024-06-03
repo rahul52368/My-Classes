@@ -1,0 +1,46 @@
+Sub InsertPDFs()
+    Dim ws As Worksheet
+    Dim pdfFiles As Variant
+    Dim i As Integer
+    Dim cell As Range
+    Dim startCell As Range
+    Dim colOffset As Integer
+    Dim numFiles As Integer
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Prompt user to select PDF files
+    pdfFiles = Application.GetOpenFilename("PDF Files (*.pdf), *.pdf", MultiSelect:=True)
+    
+    ' If the user cancels the dialog, exit the sub
+    If IsArray(pdfFiles) = False Then
+        MsgBox "No files selected. Exiting..."
+        Exit Sub
+    End If
+    
+    ' Define the starting cell
+    Set startCell = ws.Range("H20")
+    colOffset = 3 ' Column offset between each cell (e.g., H -> K -> N)
+    
+    ' Get the number of selected files
+    numFiles = UBound(pdfFiles) - LBound(pdfFiles) + 1
+    
+    ' Loop through the selected files and insert them into the calculated cells
+    For i = LBound(pdfFiles) To UBound(pdfFiles)
+        Set cell = startCell.Offset(0, colOffset * (i - LBound(pdfFiles)))
+        
+        With ws.OLEObjects.Add(ClassType:="AcroExch.Document.DC", _
+                               FileName:=pdfFiles(i), _
+                               Link:=False, _
+                               DisplayAsIcon:=True, _
+                               IconFileName:="C:\Windows\System32\shell32.dll", _
+                               IconIndex:=0, _
+                               IconLabel:="My PDF")
+            .Top = cell.Top
+            .Left = cell.Left
+        End With
+    Next i
+    
+    MsgBox "PDF files inserted successfully!"
+End Sub
