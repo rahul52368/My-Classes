@@ -1,0 +1,79 @@
+Sub DivideColumnByCell()
+    Dim ws As Worksheet
+    Dim colRange As Range
+    Dim cellValue As Double
+    Dim headerName As String
+    Dim cellRef As String
+    Dim lastRow As Long
+    Dim targetColumn As Range
+    Dim cell As Range
+    
+    ' Set your worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Define the header name to find the target column and the cell containing the divisor
+    headerName = "YourHeaderName" ' Change this to the name of the header
+    cellRef = "B1" ' Change this to the cell with the divisor
+    
+    ' Get the value from the cell and validate it
+    On Error GoTo InvalidDivisor
+    cellValue = CDbl(ws.Range(cellRef).Value)
+    On Error GoTo 0
+    
+    ' Check if the cell value is zero to avoid division by zero
+    If cellValue = 0 Then
+        MsgBox "Error: Division by zero is not allowed.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Find the column with the specified header
+    Set targetColumn = FindColumnByHeader(ws, headerName)
+    If targetColumn Is Nothing Then
+        MsgBox "Error: Header '" & headerName & "' not found.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Find the last row in the target column
+    lastRow = ws.Cells(ws.Rows.Count, targetColumn.Column).End(xlUp).Row
+    
+    ' Set the range for the column excluding the header row
+    Set colRange = ws.Range(targetColumn.Offset(1, 0), ws.Cells(lastRow, targetColumn.Column))
+    
+    ' Loop through each cell in the column and divide by the cell value
+    On Error GoTo InvalidCellValue
+    For Each cell In colRange
+        If IsNumeric(cell.Value) Then
+            cell.Value = cell.Value / cellValue
+        End If
+    Next cell
+    
+    MsgBox "Column values under the header '" & headerName & "' have been divided by the value in " & cellRef
+    Exit Sub
+    
+InvalidDivisor:
+    MsgBox "Error: The divisor cell does not contain a valid number.", vbCritical
+    Exit Sub
+
+InvalidCellValue:
+    MsgBox "Error: One or more cells in the column contain non-numeric values.", vbCritical
+    Exit Sub
+End Sub
+
+Function FindColumnByHeader(ws As Worksheet, headerName As String) As Range
+    Dim headerRow As Range
+    Dim cell As Range
+    
+    ' Assume headers are in the first row
+    Set headerRow = ws.Rows(1)
+    
+    ' Loop through each cell in the header row to find the header
+    For Each cell In headerRow.Cells
+        If cell.Value = headerName Then
+            Set FindColumnByHeader = cell
+            Exit Function
+        End If
+    Next cell
+    
+    ' If header is not found, return Nothing
+    Set FindColumnByHeader = Nothing
+End Function
