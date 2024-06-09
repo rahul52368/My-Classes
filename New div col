@@ -1,0 +1,53 @@
+Sub DivideColumnByCell()
+    Dim ws As Worksheet
+    Dim colRange As Range
+    Dim cellValue As Double
+    Dim targetColumn As String
+    Dim cellRef As String
+    Dim lastRow As Long
+    Dim i As Long
+    Dim cell As Range
+    
+    ' Set your worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+
+    ' Define the target column and the cell containing the divisor
+    targetColumn = "A" ' Change this to your target column
+    cellRef = "B1" ' Change this to the cell with the divisor
+    
+    ' Get the value from the cell and validate it
+    On Error GoTo InvalidDivisor
+    cellValue = CDbl(ws.Range(cellRef).Value)
+    On Error GoTo 0
+    
+    ' Check if the cell value is zero to avoid division by zero
+    If cellValue = 0 Then
+        MsgBox "Error: Division by zero is not allowed.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Find the last row in the target column
+    lastRow = ws.Cells(ws.Rows.Count, targetColumn).End(xlUp).Row
+    
+    ' Set the range for the column
+    Set colRange = ws.Range(targetColumn & "1:" & targetColumn & lastRow)
+    
+    ' Loop through each cell in the column and divide by the cell value
+    On Error GoTo InvalidCellValue
+    For Each cell In colRange
+        If IsNumeric(cell.Value) Then
+            cell.Value = cell.Value / cellValue
+        End If
+    Next cell
+    
+    MsgBox "Column values have been divided by the value in " & cellRef
+    Exit Sub
+    
+InvalidDivisor:
+    MsgBox "Error: The divisor cell does not contain a valid number.", vbCritical
+    Exit Sub
+
+InvalidCellValue:
+    MsgBox "Error: One or more cells in the column contain non-numeric values.", vbCritical
+    Exit Sub
+End Sub
