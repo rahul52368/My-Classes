@@ -1,0 +1,38 @@
+Sub DivideColumnByCell()
+    Dim ws As Worksheet
+    Dim colRange As Range
+    Dim cellValue As Double
+    Dim targetColumn As String
+    Dim cellRef As String
+    Dim lastRow As Long
+    Dim i As Long
+    
+    ' Set your worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+
+    ' Define the target column and the cell containing the divisor
+    targetColumn = "A" ' Change this to your target column
+    cellRef = "B1" ' Change this to the cell with the divisor
+    
+    ' Get the value from the cell
+    cellValue = ws.Range(cellRef).Value
+    
+    ' Check if the cell value is zero to avoid division by zero
+    If cellValue = 0 Then
+        MsgBox "Error: Division by zero is not allowed.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Find the last row in the target column
+    lastRow = ws.Cells(ws.Rows.Count, targetColumn).End(xlUp).Row
+    
+    ' Set the range for the column
+    Set colRange = ws.Range(targetColumn & "1:" & targetColumn & lastRow)
+    
+    ' Loop through each cell in the column and divide by the cell value
+    For i = 1 To lastRow
+        ws.Cells(i, targetColumn).Value = ws.Cells(i, targetColumn).Value / cellValue
+    Next i
+    
+    MsgBox "Column values have been divided by the value in " & cellRef
+End Sub
