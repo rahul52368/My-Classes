@@ -1,0 +1,33 @@
+Sub CheckFirstCellBlankByHeader()
+    Dim ws As Worksheet
+    Dim header As String
+    Dim headerRange As Range
+    Dim cell As Range
+    Dim colIndex As Integer
+    Dim isBlank As Boolean
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+
+    ' Define the header to search for
+    header = "YourHeaderName" ' Change "YourHeaderName" to your actual header
+
+    ' Find the header in the first row
+    Set headerRange = ws.Rows(1).Find(What:=header, LookIn:=xlValues, LookAt:=xlWhole)
+
+    If Not headerRange Is Nothing Then
+        ' Get the column index
+        colIndex = headerRange.Column
+        
+        ' Check if the first cell in that column (below the header) is blank
+        If IsEmpty(ws.Cells(2, colIndex).Value) Then
+            isBlank = True
+            MsgBox "The first cell below the header '" & header & "' is blank."
+        Else
+            isBlank = False
+            MsgBox "The first cell below the header '" & header & "' is not blank."
+        End If
+    Else
+        MsgBox "Header '" & header & "' not found."
+    End If
+End Sub
