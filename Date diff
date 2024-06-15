@@ -1,0 +1,60 @@
+Sub HighlightDateDifferenceByHeader()
+    Dim ws As Worksheet
+    Dim dateHeader1 As String
+    Dim dateHeader2: String
+    Dim headerRange As Range
+    Dim colIndex1 As Integer
+    Dim colIndex2 As Integer
+    Dim lastRow As Long
+    Dim date1 As Date
+    Dim date2 As Date
+    Dim dateDifference As Long
+    Dim i As Long
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+
+    ' Define the headers to search for
+    dateHeader1 = "DateColumn1" ' Change this to your first date column header
+    dateHeader2 = "DateColumn2" ' Change this to your second date column header
+
+    ' Find the headers in the first row
+    Set headerRange = ws.Rows(1).Find(What:=dateHeader1, LookIn:=xlValues, LookAt:=xlWhole)
+    If headerRange Is Nothing Then
+        MsgBox "Header '" & dateHeader1 & "' not found."
+        Exit Sub
+    End If
+    colIndex1 = headerRange.Column
+
+    Set headerRange = ws.Rows(1).Find(What:=dateHeader2, LookIn:=xlValues, LookAt:=xlWhole)
+    If headerRange Is Nothing Then
+        MsgBox "Header '" & dateHeader2 & "' not found."
+        Exit Sub
+    End If
+    colIndex2 = headerRange.Column
+
+    ' Determine the last row with data in the columns
+    lastRow = ws.Cells(ws.Rows.Count, colIndex1).End(xlUp).Row
+    If lastRow < ws.Cells(ws.Rows.Count, colIndex2).End(xlUp).Row Then
+        lastRow = ws.Cells(ws.Rows.Count, colIndex2).End(xlUp).Row
+    End If
+
+    ' Loop through each row to check the date difference
+    For i = 2 To lastRow ' Assuming the data starts from row 2
+        ' Read the dates from the found columns
+        date1 = ws.Cells(i, colIndex1).Value
+        date2 = ws.Cells(i, colIndex2).Value
+
+        ' Calculate the difference in days
+        dateDifference = Abs(DateDiff("d", date1, date2))
+
+        ' Check if the difference is less than 365 days
+        If dateDifference < 365 Then
+            ' Highlight cells in both columns
+            ws.Cells(i, colIndex1).Interior.Color = RGB(255, 255, 0) ' Yellow
+            ws.Cells(i, colIndex2).Interior.Color = RGB(255, 255, 0) ' Yellow
+        End If
+    Next i
+
+    MsgBox "Cells with date differences less than 365 days have been highlighted."
+End Sub
