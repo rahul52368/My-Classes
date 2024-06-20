@@ -1,0 +1,44 @@
+Sub SaveAttachmentsFromOutlook()
+    Dim OutlookApp As Object
+    Dim OutlookNamespace As Object
+    Dim OutlookFolder As Object
+    Dim OutlookMail As Object
+    Dim OutlookAttachment As Object
+    Dim ExcelSheet As Worksheet
+    Dim cell As Range
+    Dim folderName As String
+    Dim targetFolderPath As String
+    Dim searchTerm As String
+    
+    ' Initialize Outlook application
+    Set OutlookApp = CreateObject("Outlook.Application")
+    Set OutlookNamespace = OutlookApp.GetNamespace("MAPI")
+    Set OutlookFolder = OutlookNamespace.Folders("YourInbox") ' Specify your Inbox
+    
+    ' Change "Sheet1" to your sheet name
+    Set ExcelSheet = ThisWorkbook.Sheets("Sheet1")
+    
+    ' Loop through each name in the Excel sheet
+    For Each cell In ExcelSheet.Range("A1:A" & ExcelSheet.Cells(ExcelSheet.Rows.Count, "A").End(xlUp).Row)
+        searchTerm = cell.Value
+        If Len(searchTerm) > 0 Then
+            folderName = searchTerm
+            targetFolderPath = "C:\Your\Path\Here\" & folderName ' Change to your desired path
+            
+            ' Search for emails with the search term in the subject
+            For Each OutlookMail In OutlookFolder.Items.Restrict("[Subject] LIKE '%" & searchTerm & "%'")
+                If OutlookMail.Attachments.Count > 0 Then
+                    For Each OutlookAttachment In OutlookMail.Attachments
+                        OutlookAttachment.SaveAsFile targetFolderPath & "\" & OutlookAttachment.FileName
+                    Next OutlookAttachment
+                End If
+            Next OutlookMail
+        End If
+    Next cell
+    
+    ' Clean up
+    Set OutlookMail = Nothing
+    Set OutlookFolder = Nothing
+    Set OutlookNamespace = Nothing
+    Set OutlookApp = Nothing
+End Sub
