@@ -1,0 +1,51 @@
+Sub SaveEmailsBasedOnPartialSubject()
+    Dim olApp As Object ' Outlook.Application
+    Dim olNamespace As Object ' Outlook.Namespace
+    Dim olFolder As Object ' Outlook.Folder
+    Dim olMail As Object ' Outlook.MailItem
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim folderPath As String
+    Dim subjectKeyword As String
+    Dim nameToFind As String
+    
+    ' Set Outlook application object
+    Set olApp = CreateObject("Outlook.Application")
+    Set olNamespace = olApp.GetNamespace("MAPI")
+    
+    ' Set the worksheet and range to search
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change sheet name as necessary
+    Set rng = ws.Range("A2:A" & ws.Cells(ws.Rows.Count, "A").End(xlUp).Row) ' Assuming names are in column A starting from row 2
+    
+    ' Iterate through each cell in the range
+    For Each cell In rng
+        If cell.Value <> "" Then
+            nameToFind = cell.Value
+            subjectKeyword = "PartialSubject" ' Change to your partial subject
+            
+            ' Search for emails matching the criteria
+            Set olFolder = olNamespace.GetDefaultFolder(6) ' 6 = olFolderInbox, change as needed
+            
+            ' Alternatively, to specify a different folder:
+            ' Set olFolder = olNamespace.Folders("Mailbox Name").Folders("Folder Name")
+            
+            For Each olMail In olFolder.Items
+                If InStr(olMail.Subject, subjectKeyword) > 0 And InStr(1, olMail.SenderName, nameToFind, vbTextCompare) > 0 Then
+                    ' Save the email attachment or the email itself
+                    folderPath = "C:\Path\To\Save\Folder\" & nameToFind & "\" ' Change path as needed
+                    If Dir(folderPath, vbDirectory) = "" Then MkDir folderPath
+                    olMail.SaveAs folderPath & olMail.Subject & ".msg", olMSG ' olMSG = 3, change format if needed
+                    ' Optionally move the email to another folder
+                    ' olMail.Move olNamespace.Folders("TargetFolder").Folders(nameToFind)
+                End If
+            Next olMail
+        End If
+    Next cell
+    
+    ' Clean up
+    Set olMail = Nothing
+    Set olFolder = Nothing
+    Set olNamespace = Nothing
+    Set olApp = Nothing
+End Sub
