@@ -1,0 +1,45 @@
+import os
+import re
+import win32com.client
+
+def sanitize_folder_name(name):
+    """Sanitize folder name to remove invalid characters."""
+    return re.sub(r'[<>:"/\\|?*]', '_', name)
+
+def save_attachments_to_subject_folder():
+    # Initialize Outlook application
+    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+
+    # Define the folder to search emails in (Inbox by default, can be modified)
+    inbox = outlook.GetDefaultFolder(6)  # 6 is the default folder ID for Inbox
+
+    # Loop through emails in the inbox
+    messages = inbox.Items
+    message = messages.GetFirst()
+
+    while message:
+        try:
+            subject = message.Subject
+            # Sanitize the subject to create a valid folder name
+            folder_name = sanitize_folder_name(subject.strip())
+            folder_path = os.path.join(os.getcwd(), folder_name)
+
+            # Create a directory named after the subject if it doesn't exist
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+
+            # Save all attachments to the folder
+            attachments = message.Attachments
+            for attachment in attachments:
+                attachment_path = os.path.join(folder_path, attachment.FileName)
+                attachment.SaveAsFile(attachment_path)
+                print(f"Saved attachment to {attachment_path}")
+
+        except Exception as e:
+            print(f"Error processing message: {str(e)}")
+
+        # Move to the next message
+        message = messages.GetNext()
+
+if __name__ == "__main__":
+    save_attachments_to_subject_folder()
