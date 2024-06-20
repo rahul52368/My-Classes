@@ -1,0 +1,97 @@
+Sub SaveEmailsToMatchingFolders()
+    Dim olApp As Object
+    Dim olNamespace As Object
+    Dim olFolder As Object
+    Dim olItems As Object
+    Dim olMail As Object
+    Dim SubjectFolder As String
+    Dim saveFolder As String
+    Dim objFileSystem As Object
+    Dim objRootFolder As Object
+    Dim matchFolder As String
+    Dim rootFolderPath As String
+    Dim i As Long
+    
+    ' Initialize Outlook application
+    Set olApp = CreateObject("Outlook.Application")
+    Set olNamespace = olApp.GetNamespace("MAPI")
+
+    ' Set the folder to check for emails
+    Set olFolder = olNamespace.GetDefaultFolder(6) ' 6 corresponds to olFolderInbox
+    Set olItems = olFolder.Items
+    
+    ' Set the root directory where you will search for matching folders
+    rootFolderPath = "C:\YourRootFolder" ' Change to your root folder path
+    
+    ' Create FileSystemObject
+    Set objFileSystem = CreateObject("Scripting.FileSystemObject")
+    Set objRootFolder = objFileSystem.GetFolder(rootFolderPath)
+
+    ' Loop through each email in the folder
+    For i = olItems.Count To 1 Step -1
+        If olItems(i).Class = 43 Then ' 43 corresponds to olMailItem
+            Set olMail = olItems(i)
+            SubjectFolder = Trim(olMail.Subject)
+
+            ' Remove invalid characters from the subject for folder naming
+            SubjectFolder = CleanFolderName(SubjectFolder)
+            
+            ' Search for the folder matching the subject
+            saveFolder = FindMatchingFolder(objRootFolder, SubjectFolder)
+            
+            ' If a matching folder is found, save the email
+            If saveFolder <> "" Then
+                Dim savePath As String
+                savePath = saveFolder & "\" & CleanFolderName(olMail.Subject) & ".msg"
+                olMail.SaveAs savePath, 3 ' 3 corresponds to olMSG format
+            End If
+        End If
+    Next i
+
+    ' Clean up
+    Set olMail = Nothing
+    Set olItems = Nothing
+    Set olFolder = Nothing
+    Set olNamespace = Nothing
+    Set olApp = Nothing
+    Set objFileSystem = Nothing
+    Set objRootFolder = Nothing
+End Sub
+
+Function CleanFolderName(str As String) As String
+    ' Remove or replace invalid characters
+    str = Replace(str, "/", "-")
+    str = Replace(str, "\", "-")
+    str = Replace(str, ":", "-")
+    str = Replace(str, "*", "-")
+    str = Replace(str, "?", "-")
+    str = Replace(str, """", "-")
+    str = Replace(str, "<", "-")
+    str = Replace(str, ">", "-")
+    str = Replace(str, "|", "-")
+    CleanFolderName = str
+End Function
+
+Function FindMatchingFolder(rootFolder As Object, folderName As String) As String
+    Dim subFolder As Object
+    Dim matchFolder As String
+    matchFolder = ""
+
+    ' Check if the current folder matches the name
+    If rootFolder.Name = folderName Then
+        FindMatchingFolder = rootFolder.Path
+        Exit Function
+    End If
+
+    ' Recursively search subfolders
+    For Each subFolder In rootFolder.SubFolders
+        matchFolder = FindMatchingFolder(subFolder, folderName)
+        If matchFolder <> "" Then
+            FindMatchingFolder = matchFolder
+            Exit Function
+        End If
+    Next subFolder
+
+    ' Return an empty string if no matching folder is found
+    FindMatchingFolder = ""
+End Function
