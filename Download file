@@ -1,0 +1,20 @@
+Sub CreateFolders()
+    Dim ws As Worksheet
+    Dim folderPath As String
+    Dim cell As Range
+    Dim folderName As String
+    
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to your sheet name
+    folderPath = "C:\Your\Path\Here\" ' Change to your desired path
+    
+    On Error Resume Next ' Ignore errors if folder already exists
+    
+    For Each cell In ws.Range("A1:A" & ws.Cells(ws.Rows.Count, "A").End(xlUp).Row)
+        folderName = cell.Value
+        If Len(folderName) > 0 Then
+            MkDir folderPath & folderName
+        End If
+    Next cell
+    
+    On Error GoTo 0 ' Resume normal error handling
+End Sub
