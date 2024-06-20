@@ -1,0 +1,105 @@
+Sub FindEmailsAndSaveAttachments()
+    Dim xlApp As Excel.Application
+    Dim xlWorkbook As Excel.Workbook
+    Dim xlSheet As Excel.Worksheet
+    Dim xlRange As Excel.Range
+    Dim xlCell As Excel.Range
+    Dim emailList As Collection
+    Dim emailAddress As String
+
+    Dim olApp As Outlook.Application
+    Dim olNS As Outlook.Namespace
+    Dim olFolder As Outlook.MAPIFolder
+    Dim olItems As Outlook.Items
+    Dim olItem As Object
+    Dim olMail As Outlook.MailItem
+    Dim olAttachment As Outlook.Attachment
+    Dim strSavePath As String
+    Dim strSubject As String
+
+    ' Initialize Excel objects
+    Set xlApp = Application
+    Set xlWorkbook = xlApp.Workbooks("YourExcelWorkbook.xlsx") ' Update the file name
+    Set xlSheet = xlWorkbook.Sheets("Sheet1") ' Update the sheet name
+    Set xlRange = xlSheet.Range("A2:A100") ' Update the range as needed
+
+    ' Initialize Outlook objects
+    Set olApp = New Outlook.Application
+    Set olNS = olApp.GetNamespace("MAPI")
+    Set olFolder = olNS.GetDefaultFolder(olFolderInbox) ' Change this if you're searching in a different folder
+    Set olItems = olFolder.Items
+
+    ' Read email addresses from Excel
+    Set emailList = New Collection
+    For Each xlCell In xlRange
+        If xlCell.Value <> "" Then
+            emailList.Add xlCell.Value
+        End If
+    Next xlCell
+
+    ' Set the folder path where attachments will be saved
+    strSavePath = "C:\YourSavePath\" ' Update with your desired save path
+
+    ' Loop through each email address and process emails
+    For Each emailAddress In emailList
+        ' Filter emails by the current email address
+        Dim filteredItems As Outlook.Items
+        Dim filter As String
+        filter = "[SenderEmailAddress] = '" & emailAddress & "'"
+        Set filteredItems = olItems.Restrict(filter)
+
+        ' Process each email in the filtered list
+        For Each olItem In filteredItems
+            If TypeOf olItem Is Outlook.MailItem Then
+                Set olMail = olItem
+                strSubject = CleanFileName(olMail.Subject)
+                Dim subjectFolderPath As String
+                subjectFolderPath = strSavePath & strSubject & "\"
+
+                ' Create subject folder if it doesn't exist
+                If Dir(subjectFolderPath, vbDirectory) = "" Then
+                    MkDir subjectFolderPath
+                End If
+
+                ' Save each attachment in the subject folder
+                For Each olAttachment In olMail.Attachments
+                    Dim attachmentFilePath As String
+                    attachmentFilePath = subjectFolderPath & olAttachment.FileName
+                    olAttachment.SaveAsFile attachmentFilePath
+                Next olAttachment
+            End If
+        Next olItem
+    Next emailAddress
+
+    ' Clean up
+    Set olAttachment = Nothing
+    Set olMail = Nothing
+    Set olItems = Nothing
+    Set olFolder = Nothing
+    Set olNS = Nothing
+    Set olApp = Nothing
+
+    Set xlCell = Nothing
+    Set xlRange = Nothing
+    Set xlSheet = Nothing
+    Set xlWorkbook = Nothing
+    Set xlApp = Nothing
+
+    MsgBox "Attachments saved successfully!", vbInformation
+End Sub
+
+' Function to clean up folder names
+Function CleanFileName(strIn As String) As String
+    Dim strOut As String
+    strOut = strIn
+    strOut = Replace(strOut, "/", "-")
+    strOut = Replace(strOut, "\", "-")
+    strOut = Replace(strOut, ":", "-")
+    strOut = Replace(strOut, "*", "-")
+    strOut = Replace(strOut, "?", "-")
+    strOut = Replace(strOut, Chr(34), "-")
+    strOut = Replace(strOut, "<", "-")
+    strOut = Replace(strOut, ">", "-")
+    strOut = Replace(strOut, "|", "-")
+    CleanFileName = strOut
+End Function
