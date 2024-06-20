@@ -1,0 +1,99 @@
+Sub SaveAttachmentsFromEmailsBasedOnNames()
+    Dim OutlookApp As Object
+    Dim OutlookNamespace As Object
+    Dim OutlookFolder As Object
+    Dim OutlookMail As Object
+    Dim OutlookAttachment As Object
+    Dim ExcelSheet As Worksheet
+    Dim LastRow As Long
+    Dim NameCell As Range
+    Dim SearchName As String
+    Dim sFolderPath As String
+    Dim sSaveFolder As String
+    Dim sFileName As String
+    Dim Item As Object
+    Dim FoundItem As Boolean
+    
+    ' Initialize Outlook application
+    On Error Resume Next
+    Set OutlookApp = GetObject(, "Outlook.Application")
+    If OutlookApp Is Nothing Then
+        Set OutlookApp = CreateObject("Outlook.Application")
+    End If
+    On Error GoTo 0
+    
+    Set OutlookNamespace = OutlookApp.GetNamespace("MAPI")
+    Set OutlookFolder = OutlookNamespace.GetDefaultFolder(6) ' 6 refers to the Inbox
+
+    ' Define the Excel worksheet and range
+    Set ExcelSheet = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    LastRow = ExcelSheet.Cells(ExcelSheet.Rows.Count, "A").End(xlUp).Row ' Assume names are in column A
+
+    ' Base folder path where attachments will be saved
+    sFolderPath = "C:\Your\Directory\Path\" ' Change this to your desired path
+
+    ' Loop through each name in the Excel column
+    For Each NameCell In ExcelSheet.Range("A2:A" & LastRow) ' Start from row 2, assuming row 1 is a header
+        SearchName = NameCell.Value
+        
+        ' Reset the found flag
+        FoundItem = False
+
+        ' Search for emails with the given name in the subject or body
+        For Each Item In OutlookFolder.Items
+            If TypeOf Item Is Outlook.MailItem Then
+                Set OutlookMail = Item
+                If InStr(1, OutlookMail.Subject, SearchName, vbTextCompare) > 0 Or _
+                   InStr(1, OutlookMail.Body, SearchName, vbTextCompare) > 0 Then
+                    ' Set found flag
+                    FoundItem = True
+
+                    ' Clean the name for folder use
+                    sSaveFolder = sFolderPath & CleanFileName(SearchName) & "\"
+                    If Dir(sSaveFolder, vbDirectory) = "" Then
+                        MkDir sSaveFolder
+                    End If
+
+                    ' Save attachments
+                    For Each OutlookAttachment In OutlookMail.Attachments
+                        sFileName = sSaveFolder & OutlookAttachment.FileName
+                        OutlookAttachment.SaveAsFile sFileName
+                    Next OutlookAttachment
+                End If
+            End If
+        Next Item
+        
+        ' Notify if no emails were found for the given name
+        If Not FoundItem Then
+            MsgBox "No emails found for name: " & SearchName
+        End If
+    Next NameCell
+    
+    ' Clean up
+    Set OutlookAttachment = Nothing
+    Set OutlookMail = Nothing
+    Set OutlookFolder = Nothing
+    Set OutlookNamespace = Nothing
+    Set OutlookApp = Nothing
+
+    MsgBox "Attachments have been saved."
+End Sub
+
+Function CleanFileName(sFileName As String) As String
+    ' Remove invalid characters from folder name
+    Dim invalidChars As String
+    Dim c As String
+    invalidChars = "/\:*?""<>|"
+
+    For i = 1 To Len(invalidChars)
+        c = Mid(invalidChars, i, 1)
+        sFileName = Replace(sFileName, c, "")
+    Next i
+    
+    ' Truncate if necessary to avoid overly long paths
+    If Len(sFileName) > 50 Then
+        sFileName = Left(sFileName, 50)
+    End If
+
+    CleanFileName = sFileName
+End Function
