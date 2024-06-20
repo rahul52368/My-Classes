@@ -1,0 +1,62 @@
+Sub SaveGroupEmailsToFolder()
+    Dim OutlookApp As Object
+    Dim Namespace As Object
+    Dim GroupMailbox As Object
+    Dim TargetFolder As Object
+    Dim MailItem As Object
+    Dim SaveFolder As String
+    Dim FileName As String
+    Dim i As Integer
+    Dim MailboxName As String
+    Dim FolderName As String
+
+    ' Initialize the Outlook application
+    Set OutlookApp = CreateObject("Outlook.Application")
+    Set Namespace = OutlookApp.GetNamespace("MAPI")
+    
+    ' Set the name of the group mailbox
+    MailboxName = "Group Mailbox Name" ' Change this to your group mailbox name
+    
+    ' Set the name of the target folder within the group mailbox
+    FolderName = "Folder Name" ' Change this to your target folder name
+    
+    ' Define the folder where you want to save emails
+    SaveFolder = "C:\YourFolder\" ' Change this to your target folder on your computer
+    
+    ' Access the group mailbox
+    Set GroupMailbox = Namespace.Folders(MailboxName)
+    
+    ' Access the specific folder within the group mailbox
+    Set TargetFolder = GroupMailbox.Folders(FolderName)
+    
+    ' Loop through all the items in the folder
+    For i = 1 To TargetFolder.Items.Count
+        Set MailItem = TargetFolder.Items(i)
+        
+        ' Check if the item is an email
+        If TypeName(MailItem) = "MailItem" Then
+            ' Create a valid filename by replacing illegal characters
+            FileName = Replace(MailItem.Subject, ":", "_")
+            FileName = Replace(FileName, "\", "_")
+            FileName = Replace(FileName, "/", "_")
+            FileName = Replace(FileName, "?", "_")
+            FileName = Replace(FileName, "*", "_")
+            FileName = Replace(FileName, Chr(34), "_") ' Chr(34) is the double quote character
+            FileName = Replace(FileName, "<", "_")
+            FileName = Replace(FileName, ">", "_")
+            FileName = Replace(FileName, "|", "_")
+            
+            ' Save the email as a .msg file
+            MailItem.SaveAs SaveFolder & FileName & ".msg", 3 ' 3 refers to .msg format
+        End If
+    Next i
+    
+    ' Clean up
+    Set MailItem = Nothing
+    Set TargetFolder = Nothing
+    Set GroupMailbox = Nothing
+    Set Namespace = Nothing
+    Set OutlookApp = Nothing
+    
+    MsgBox "Emails have been saved successfully!"
+End Sub
