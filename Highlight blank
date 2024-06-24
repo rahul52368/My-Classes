@@ -1,0 +1,46 @@
+Sub HighlightBlankCellsInColumn()
+    Dim ws As Worksheet
+    Dim header As String
+    Dim headerRow As Integer
+    Dim col As Integer
+    Dim lastRow As Long
+    Dim cell As Range
+    Dim headerFound As Boolean
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+
+    ' Define the header name you're looking for
+    header = "YourHeader" ' Change "YourHeader" to the actual header name
+
+    ' Define the header row
+    headerRow = 1 ' Assuming the header is in the first row, change if necessary
+
+    ' Initialize headerFound flag
+    headerFound = False
+
+    ' Loop through the columns to find the header
+    For col = 1 To ws.Cells(headerRow, ws.Columns.Count).End(xlToLeft).Column
+        If ws.Cells(headerRow, col).Value = header Then
+            headerFound = True
+            Exit For
+        End If
+    Next col
+
+    ' If header is found, highlight blank cells in that column
+    If headerFound Then
+        ' Find the last row in the column
+        lastRow = ws.Cells(ws.Rows.Count, col).End(xlUp).Row
+
+        ' Loop through the cells in the column
+        For Each cell In ws.Range(ws.Cells(headerRow + 1, col), ws.Cells(lastRow, col))
+            If IsEmpty(cell.Value) Then
+                cell.Interior.Color = RGB(255, 0, 0) ' Highlight in red color
+            End If
+        Next cell
+
+        MsgBox "Blank cells in column '" & header & "' have been highlighted.", vbInformation
+    Else
+        MsgBox "Header '" & header & "' not found.", vbExclamation
+    End If
+End Sub
