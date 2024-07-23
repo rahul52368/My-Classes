@@ -1,0 +1,30 @@
+Sub RemoveSecondDigitAfterDotNonNumeric()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim col As String
+    Dim newValue As String
+    Dim dotPos As Integer
+    
+    ' Set the worksheet you are working on
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Set the column you want to process
+    col = "A" ' Change "A" to your column letter
+    
+    ' Set the range to process (assuming the column has data from row 1 to the last used row)
+    Set rng = ws.Range(col & "1:" & ws.Cells(ws.Rows.Count, col).End(xlUp).Address)
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        If Not IsNumeric(cell.Value) Then
+            newValue = CStr(cell.Value)
+            dotPos = InStr(newValue, ".")
+            If dotPos > 0 And Len(newValue) > dotPos + 2 Then
+                ' Remove the second digit after the dot
+                newValue = Left(newValue, dotPos + 1) & Mid(newValue, dotPos + 2, 1) & Mid(newValue, dotPos + 3)
+                cell.Value = newValue
+            End If
+        End If
+    Next cell
+End Sub
