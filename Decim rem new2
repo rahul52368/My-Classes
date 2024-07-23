@@ -1,0 +1,31 @@
+Sub RemoveSecondDigitAfterDotInTextAlternative()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim col As String
+    Dim parts() As String
+    Dim decimalPart As String
+    
+    ' Set the worksheet you are working on
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Set the column you want to process
+    col = "A" ' Change "A" to your column letter
+    
+    ' Set the range to process (assuming the column has data from row 1 to the last used row)
+    Set rng = ws.Range(col & "1:" & ws.Cells(ws.Rows.Count, col).End(xlUp).Address)
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        If Not IsEmpty(cell.Value) Then
+            parts = Split(cell.Value, ".")
+            If UBound(parts) > 0 Then
+                decimalPart = parts(1)
+                If Len(decimalPart) > 1 Then
+                    decimalPart = Left(decimalPart, 1) & Mid(decimalPart, 3)
+                    cell.Value = parts(0) & "." & decimalPart
+                End If
+            End If
+        End If
+    Next cell
+End Sub
