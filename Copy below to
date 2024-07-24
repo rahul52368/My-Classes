@@ -1,0 +1,26 @@
+Sub CopyDataWithoutHeadersBelowLastRow()
+    Dim sourceSheet As Worksheet
+    Dim destinationSheet: Worksheet
+    Dim sourceRange As Range
+    Dim lastSourceRow As Long
+    Dim lastDestRow As Long
+    
+    ' Set the source and destination sheets
+    Set sourceSheet = ThisWorkbook.Sheets("SourceSheet") ' Change "SourceSheet" to your source sheet name
+    Set destinationSheet = ThisWorkbook.Sheets("DestinationSheet") ' Change "DestinationSheet" to your destination sheet name
+    
+    ' Find the last row with data in the source sheet
+    lastSourceRow = sourceSheet.Cells(sourceSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Set the source range (excluding headers)
+    Set sourceRange = sourceSheet.Range("A2:A" & lastSourceRow).EntireRow ' Adjust the column "A" if your data starts in a different column
+    
+    ' Find the last row with data in the destination sheet
+    lastDestRow = destinationSheet.Cells(destinationSheet.Rows.Count, "A").End(xlUp).Row + 1
+    
+    ' Copy the data from the source range to the destination sheet starting from the next empty row
+    sourceRange.Copy Destination:=destinationSheet.Range("A" & lastDestRow)
+    
+    ' Optional: Clear the clipboard to free up memory
+    Application.CutCopyMode = False
+End Sub
