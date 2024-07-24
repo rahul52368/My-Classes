@@ -1,0 +1,29 @@
+Sub InsertCopiedDataBelowHeaders()
+    Dim sourceSheet As Worksheet
+    Dim destinationSheet As Worksheet
+    Dim sourceRange As Range
+    Dim lastSourceRow As Long
+    Dim lastSourceCol As Long
+    Dim numSourceRows As Long
+
+    ' Set the source and destination sheets
+    Set sourceSheet = ThisWorkbook.Sheets("SourceSheet") ' Change "SourceSheet" to your source sheet name
+    Set destinationSheet = ThisWorkbook.Sheets("DestinationSheet") ' Change "DestinationSheet" to your destination sheet name
+    
+    ' Set the source range to the used range, excluding headers (assuming headers are in the first row)
+    lastSourceRow = sourceSheet.UsedRange.Rows.Count
+    lastSourceCol = sourceSheet.UsedRange.Columns.Count
+    Set sourceRange = sourceSheet.Range(sourceSheet.Cells(2, 1), sourceSheet.Cells(lastSourceRow, lastSourceCol))
+    
+    ' Count the number of rows in the source range
+    numSourceRows = sourceRange.Rows.Count
+    
+    ' Insert blank rows in the destination sheet below the header to make space for the source range
+    destinationSheet.Rows(2 & ":" & 1 + numSourceRows).Insert Shift:=xlDown
+    
+    ' Copy the data from the source range to the destination sheet starting from the second row
+    sourceRange.Copy Destination:=destinationSheet.Cells(2, 1)
+    
+    ' Optional: Clear the clipboard to free up memory
+    Application.CutCopyMode = False
+End Sub
