@@ -1,0 +1,32 @@
+Sub DeleteDuplicateRows()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim col As String
+    Dim cell As Range
+    Dim dict As Object
+    Dim i As Long
+    
+    ' Set the worksheet you are working on
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Set the column you want to check for duplicates (e.g., "A")
+    col = "A" ' Change "A" to your column letter
+    
+    ' Find the last row with data in the specified column
+    lastRow = ws.Cells(ws.Rows.Count, col).End(xlUp).Row
+    
+    ' Create a dictionary to store unique values
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    ' Loop through each cell in the specified column from the bottom to the top
+    For i = lastRow To 1 Step -1
+        Set cell = ws.Cells(i, col)
+        If dict.exists(cell.Value) Then
+            ' If the value is already in the dictionary, delete the row
+            cell.EntireRow.Delete
+        Else
+            ' If the value is not in the dictionary, add it
+            dict.Add cell.Value, Nothing
+        End If
+    Next i
+End Sub
