@@ -1,0 +1,12 @@
+Sub RemoveDuplicateRows()
+    Dim lastRow As Long
+    Dim myColumn As String
+
+    ' Replace "A" with the column letter you want to check for duplicates
+    myColumn = "A"
+
+    With ActiveSheet
+        lastRow = .Cells(.Rows.Count, myColumn).End(xlUp).Row
+        .Range(myColumn & "1:" & myColumn & lastRow).RemoveDuplicates Columns:=1, Header:=xlNo
+    End With
+End Sub
