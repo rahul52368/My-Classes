@@ -1,0 +1,45 @@
+Sub DistributeValuesByCategory()
+    Dim ws As Worksheet
+    Dim lastRowA As Long, lastRowB As Long, lastRowC As Long
+    Dim categories As Object
+    Dim valuesPerCategory As Long
+    Dim catIndex As Long, valIndex As Long, targetIndex As Long
+
+    ' Replace "Sheet1" with your sheet name
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+
+    ' Assuming categories are in column C, values to be assigned are in column B, and target column is A
+    With ws
+        lastRowA = .Cells(.Rows.Count, "A").End(xlUp).Row
+        lastRowB = .Cells(.Rows.Count, "B").End(xlUp).Row
+        lastRowC = .Cells(.Rows.Count, "C").End(xlUp).Row
+
+        ' Collect unique categories and count their occurrences
+        Set categories = CreateObject("Scripting.Dictionary")
+        For i = 2 To lastRowC
+            If Not categories.Exists(.Cells(i, 3).Value) Then
+                categories.Add .Cells(i, 3).Value, 1
+            Else
+                categories(.Cells(i, 3).Value) = categories(.Cells(i, 3).Value) + 1
+            End If
+        Next i
+
+        ' Calculate the number of values to assign per category
+        valuesPerCategory = Int((lastRowB - 1) / categories.Count)
+
+        ' Assign values to column A
+        catIndex = 2
+        valIndex = 2
+        targetIndex = 2
+        For i = 2 To lastRowA
+            If targetIndex > lastRowA Then Exit For ' Exit loop if all target cells are filled
+            .Cells(targetIndex, 1).Value = .Cells(valIndex, 2).Value
+            valIndex = valIndex + 1
+            targetIndex = targetIndex + 1
+            If valIndex - 2 > valuesPerCategory Then
+                catIndex = catIndex + 1
+                valIndex = 2
+            End If
+        Next i
+    End With
+End Sub
