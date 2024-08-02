@@ -1,0 +1,41 @@
+Sub AssignEqualValuesBasedOnCategories()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim category As String
+    Dim dict As Object
+    Dim categorySum As Double
+    Dim categoryCount As Long
+    Dim averageValue As Double
+    
+    ' Set the worksheet you are working with
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    
+    ' Find the last row with data in the worksheet
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Create a dictionary to store category sums and counts
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    ' First pass: Calculate sums and counts for each category
+    For i = 2 To lastRow
+        category = ws.Cells(i, 3).Value ' Assume the categories are in column C
+        
+        If Not dict.Exists(category) Then
+            dict.Add category, Array(0, 0) ' Initialize sum and count
+        End If
+        
+        dict(category)(0) = dict(category)(0) + ws.Cells(i, 1).Value ' Update sum
+        dict(category)(1) = dict(category)(1) + 1 ' Update count
+    Next i
+    
+    ' Second pass: Assign the average value to each row in the corresponding category
+    For i = 2 To lastRow
+        category = ws.Cells(i, 3).Value
+        categorySum = dict(category)(0)
+        categoryCount = dict(category)(1)
+        averageValue = categorySum / categoryCount
+        
+        ws.Cells(i, 2).Value = averageValue ' Assign the average value to column B
+    Next i
+End Sub
