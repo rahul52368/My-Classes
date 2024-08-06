@@ -1,0 +1,56 @@
+Sub FillColumnWithVlookupAndLeastFrequentValue()
+    Dim ws As Worksheet
+    Dim lookupTable As Worksheet
+    Dim lookupRange As Range
+    Dim dataRange As Range
+    Dim cell As Range
+    Dim lookupValue As Variant
+    Dim leastFrequentValue As Variant
+    Dim valueCounts As Object
+    Dim minCount As Long
+    Dim key As Variant
+
+    ' Set references to the sheets and ranges
+    Set ws = ThisWorkbook.Sheets("Sheet2") ' The sheet where you want to fill the column
+    Set lookupTable = ThisWorkbook.Sheets("Sheet1") ' The sheet with the lookup table
+    Set lookupRange = lookupTable.Range("A:B") ' The lookup table range (adjust as needed)
+    Set dataRange = ws.Range("A2:A" & ws.Cells(ws.Rows.Count, "A").End(xlUp).Row) ' The range to fill (adjust as needed)
+
+    ' Create a dictionary to count the frequency of values in the lookup table
+    Set valueCounts = CreateObject("Scripting.Dictionary")
+    For Each cell In lookupRange.Columns(2).Cells
+        If Not valueCounts.exists(cell.Value) Then
+            valueCounts.Add cell.Value, 1
+        Else
+            valueCounts(cell.Value) = valueCounts(cell.Value) + 1
+        End If
+    Next cell
+
+    ' Determine the least frequent value
+    minCount = Application.WorksheetFunction.Min(valueCounts.Items)
+    For Each key In valueCounts.Keys
+        If valueCounts(key) = minCount Then
+            leastFrequentValue = key
+            Exit For
+        End If
+    Next key
+
+    ' Fill the column based on VLOOKUP
+    For Each cell In dataRange
+        On Error Resume Next
+        lookupValue = Application.WorksheetFunction.VLookup(cell.Value, lookupRange, 2, False)
+        If IsError(lookupValue) Then
+            cell.Offset(0, 1).Value = leastFrequentValue ' Fill with the least frequent value if not found
+        Else
+            cell.Offset(0, 1).Value = lookupValue ' Fill with the VLOOKUP value
+        End If
+        On Error GoTo 0
+    Next cell
+
+    ' Clean up
+    Set ws = Nothing
+    Set lookupTable = Nothing
+    Set lookupRange = Nothing
+    Set dataRange = Nothing
+    Set valueCounts = Nothing
+End Sub
