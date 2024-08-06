@@ -1,0 +1,75 @@
+Sub FillColumnWithVlookupAndDistributeAllLeastFrequentValues()
+    Dim ws As Worksheet
+    Dim lookupTable As Worksheet
+    Dim lookupRange As Range
+    Dim dataRange As Range
+    Dim cell As Range
+    Dim lookupValue As Variant
+    Dim leastFrequentValues As Collection
+    Dim valueCounts As Object
+    Dim minCount As Long
+    Dim key As Variant
+    Dim valueUseCount As Object
+    Dim leastFrequentIndex As Long
+
+    ' Set references to the sheets and ranges
+    Set ws = ThisWorkbook.Sheets("Sheet2") ' The sheet where you want to fill the column
+    Set lookupTable = ThisWorkbook.Sheets("Sheet1") ' The sheet with the lookup table
+    Set lookupRange = lookupTable.Range("A:B") ' The lookup table range (adjust as needed)
+    Set dataRange = ws.Range("A2:A" & ws.Cells(ws.Rows.Count, "A").End(xlUp).Row) ' The range to fill (adjust as needed)
+
+    ' Create a dictionary to count the frequency of values in the lookup table
+    Set valueCounts = CreateObject("Scripting.Dictionary")
+    For Each cell In lookupRange.Columns(2).Cells
+        If Not valueCounts.exists(cell.Value) Then
+            valueCounts.Add cell.Value, 1
+        Else
+            valueCounts(cell.Value) = valueCounts(cell.Value) + 1
+        End If
+    Next cell
+
+    ' Determine the least frequent values
+    minCount = Application.WorksheetFunction.Min(valueCounts.Items)
+    Set leastFrequentValues = New Collection
+    For Each key In valueCounts.Keys
+        If valueCounts(key) = minCount Then
+            leastFrequentValues.Add key
+        End If
+    Next key
+
+    ' Initialize a dictionary to keep track of how many times each least frequent value has been used
+    Set valueUseCount = CreateObject("Scripting.Dictionary")
+    For Each key In leastFrequentValues
+        valueUseCount.Add key, 0
+    Next key
+
+    ' Fill the column based on VLOOKUP
+    leastFrequentIndex = 1
+    For Each cell In dataRange
+        On Error Resume Next
+        lookupValue = Application.WorksheetFunction.VLookup(cell.Value, lookupRange, 2, False)
+        If IsError(lookupValue) Then
+            ' Distribute the least frequent values equally
+            cell.Offset(0, 1).Value = leastFrequentValues(leastFrequentIndex)
+            valueUseCount(leastFrequentValues(leastFrequentIndex)) = valueUseCount(leastFrequentValues(leastFrequentIndex)) + 1
+            
+            ' Move to the next least frequent value
+            leastFrequentIndex = leastFrequentIndex + 1
+            If leastFrequentIndex > leastFrequentValues.Count Then
+                leastFrequentIndex = 1
+            End If
+        Else
+            cell.Offset(0, 1).Value = lookupValue ' Fill with the VLOOKUP value
+        End If
+        On Error GoTo 0
+    Next cell
+
+    ' Clean up
+    Set ws = Nothing
+    Set lookupTable = Nothing
+    Set lookupRange = Nothing
+    Set dataRange = Nothing
+    Set valueCounts = Nothing
+    Set valueUseCount = Nothing
+    Set leastFrequentValues = Nothing
+End Sub
