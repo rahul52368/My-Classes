@@ -1,0 +1,54 @@
+Sub FillBlanksWithMinFrequencyValues()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim valueCounts As Collection
+    Dim value As Variant
+    Dim minValue As Variant
+    Dim minFrequency As Long
+    Dim minFrequencyValues As Collection
+    Dim blankCells As Collection
+    Dim i As Long, j As Long
+    
+    ' Set the worksheet and range
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    Set rng = ws.Range("A1:A100") ' Adjust the range as needed
+
+    ' Initialize collections
+    Set valueCounts = New Collection
+    Set minFrequencyValues = New Collection
+    Set blankCells = New Collection
+
+    ' Count frequencies of each value
+    For Each cell In rng
+        If Not IsEmpty(cell.Value) Then
+            On Error Resume Next
+            valueCounts.Add cell.Value, CStr(cell.Value)
+            If Err.Number = 0 Then
+                valueCounts(CStr(cell.Value)) = 1
+            Else
+                valueCounts(CStr(cell.Value)) = valueCounts(CStr(cell.Value)) + 1
+            End If
+            On Error GoTo 0
+        Else
+            blankCells.Add cell
+        End If
+    Next cell
+
+    ' Find the minimum frequency
+    minFrequency = Application.WorksheetFunction.Min(valueCounts)
+
+    ' Collect values with the minimum frequency
+    For Each value In valueCounts
+        If valueCounts(value) = minFrequency Then
+            minFrequencyValues.Add value
+        End If
+    Next value
+
+    ' Distribute min frequency values to blank cells
+    i = 1
+    For Each cell In blankCells
+        cell.Value = minFrequencyValues((i - 1) Mod minFrequencyValues.Count + 1)
+        i = i + 1
+    Next cell
+End Sub
