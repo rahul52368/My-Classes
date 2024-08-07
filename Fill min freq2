@@ -1,0 +1,57 @@
+Sub FillBlanksWithMinFrequency()
+    Dim ws As Worksheet
+    Dim dataRange As Range
+    Dim cell As Range
+    Dim dict As Object
+    Dim minFreq As Long
+    Dim minFreqValues As Collection
+    Dim i As Long, j As Long
+    Dim blanks As Collection
+    
+    ' Set worksheet and data range
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change the sheet name if necessary
+    Set dataRange = ws.Range("A1:A" & ws.Cells(ws.Rows.Count, "A").End(xlUp).Row) ' Change the column if necessary
+    
+    ' Initialize dictionary and collections
+    Set dict = CreateObject("Scripting.Dictionary")
+    Set minFreqValues = New Collection
+    Set blanks = New Collection
+    
+    ' Count frequencies of each value
+    For Each cell In dataRange
+        If Not IsEmpty(cell.Value) Then
+            If dict.exists(cell.Value) Then
+                dict(cell.Value) = dict(cell.Value) + 1
+            Else
+                dict.Add cell.Value, 1
+            End If
+        Else
+            blanks.Add cell
+        End If
+    Next cell
+    
+    ' Find minimum frequency
+    minFreq = Application.Min(dict.Items)
+    
+    ' Find values with minimum frequency
+    For Each key In dict.keys
+        If dict(key) = minFreq Then
+            minFreqValues.Add key
+        End If
+    Next key
+    
+    ' Fill blanks with minimum frequency values equally
+    If minFreqValues.Count > 0 And blanks.Count > 0 Then
+        j = 1
+        For i = 1 To blanks.Count
+            blanks(i).Value = minFreqValues(j)
+            j = j + 1
+            If j > minFreqValues.Count Then j = 1
+        Next i
+    End If
+    
+    ' Clean up
+    Set dict = Nothing
+    Set minFreqValues = Nothing
+    Set blanks = Nothing
+End Sub
