@@ -1,0 +1,81 @@
+# Load necessary libraries
+if (!require("tidyverse")) {
+  install.packages("tidyverse", dependencies = TRUE)
+}
+if (!require("stringr")) {
+  install.packages("stringr", dependencies = TRUE)
+}
+
+library(tidyverse)
+library(stringr)
+
+# Example of reading a large dataset (replace with actual dataset)
+# Assume df_large is your big data frame with a column 'text_column' containing addresses
+df_large <- read_csv("your_large_dataset.csv") # Replace with actual file path
+
+# Define multiple regex patterns to capture different address formats
+
+# Full address with street, city, state, and optional ZIP
+full_address_regex <- "(\\d+\\s+[A-Za-z0-9\\s]+(?:St|Ave|Blvd|Rd|Dr|Ct|Pl|Way|Lane)?),\\s?([A-Za-z]+(?:\\s[A-Za-z]+)?),\\s?([A-Z]{2})\\s?(\\d{5})?"
+
+# Street address with possible apartment/suite number
+street_regex <- "(\\d+\\s+[A-Za-z0-9\\s]+(?:St|Ave|Blvd|Rd|Dr|Ct|Pl|Way|Lane)?)(?:,\\s?(Apt|Suite|Unit)?\\s?[A-Za-z0-9]*)?"
+
+# City and state (for cases where street might be missing)
+city_state_regex <- "([A-Za-z]+(?:\\s[A-Za-z]+)?),\\s?([A-Z]{2})"
+
+# State-only regex (for very incomplete addresses)
+state_regex <- "\\b([A-Z]{2})\\b"
+
+# Extract full address components
+address_components <- str_match(df_large$text_column, full_address_regex)
+
+# Create columns for street, city, state, and ZIP code
+df_large <- df_large %>%
+  mutate(
+    street = address_components[, 2],
+    city = address_components[, 3],
+    state = address_components[, 4],
+    zip_code = address_components[, 5]
+  )
+
+# Fallback extraction for street if not captured by main regex
+df_large <- df_large %>%
+  mutate(street = if_else(is.na(street), 
+                          str_extract(text_column, street_regex), 
+                          street))
+
+# Fallback extraction for city and state if not captured by main regex
+city_state_components <- str_match(df_large$text_column, city_state_regex)
+df_large <- df_large %>%
+  mutate(
+    city = if_else(is.na(city), city_state_components[, 2], city),
+    state = if_else(is.na(state), city_state_components[, 3], state)
+  )
+
+# Fallback extraction for state if still not captured
+df_large <- df_large %>%
+  mutate(state = if_else(is.na(state), str_extract(text_column, state_regex), state))
+
+# Handle edge cases: Remove irrelevant keywords, extra punctuation, etc.
+# Using str_replace_all for bulk cleaning
+df_large <- df_large %>%
+  mutate(
+    street = str_replace_all(street, "[^A-Za-z0-9\\s]", ""),
+    city = str_replace_all(city, "[^A-Za-z\\s]", ""),
+    state = str_replace_all(state, "[^A-Z]", "")
+  )
+
+# Clean up whitespace and case issues
+df_large <- df_large %>%
+  mutate(
+    street = str_trim(str_to_title(street)),
+    city = str_trim(str_to_title(city)),
+    state = str_trim(str_to_upper(state))
+  )
+
+# Print the resulting data frame
+print(head(df_large))
+
+# Optionally, save the cleaned data to a new CSV
+# write_csv(df_large, "cleaned_addresses.csv")
