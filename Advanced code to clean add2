@@ -1,0 +1,80 @@
+Sub ExtractAndSplitAddressesAdvanced()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim currentRow As Long
+    Dim cellValue As String
+    Dim street As String, city As String, state As String
+    Dim errorRow As Long
+
+    ' Replace "Sheet1" with your sheet name
+    Set ws = Worksheets("Sheet1")
+
+    ' Find the last row with data in column A (adjust column as needed)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    ' Columns for output
+    Dim outputColStreet As Integer: outputColStreet = 2 ' Column B
+    Dim outputColCity As Integer: outputColCity = 3 ' Column C
+    Dim outputColState As Integer: outputColState = 4 ' Column D
+
+    ' Error handling row
+    errorRow = lastRow + 2
+
+    ' Array for faster processing (optional)
+    Dim dataArray() As Variant
+    If lastRow - 1 > 1000 Then ' Adjust threshold as needed
+        ReDim dataArray(1 To lastRow - 1, 1 To 4)
+    End If
+
+    For currentRow = 2 To lastRow
+        On Error GoTo ErrorHandler
+        cellValue = ws.Cells(currentRow, 1).Value
+
+        ' Data cleaning and preprocessing (optional)
+        cellValue = Trim(cellValue)
+        cellValue = Replace(cellValue, vbNewLine, " ") ' Handle multiple lines
+
+        ' Address extraction and splitting (improved logic)
+        Dim addressParts() As String
+        addressParts = Split(cellValue, ",")
+
+        If UBound(addressParts) >= 2 Then
+            street = Trim(addressParts(0))
+            city = Trim(addressParts(1))
+            state = Trim(addressParts(2))
+        ElseIf UBound(addressParts) = 1 Then
+            ' Handle cases with city and state combined
+            street = Trim(addressParts(0))
+            city = ""
+            state = Trim(addressParts(1))
+        Else
+            ' Handle other unexpected formats
+            street = cellValue
+            city = ""
+            state = ""
+        End If
+
+        ' Write to output columns or array
+        If IsArray(dataArray) Then
+            dataArray(currentRow - 1, 1) = street
+            dataArray(currentRow - 1, 2) = city
+            dataArray(currentRow - 1, 3) = state
+        Else
+            ws.Cells(currentRow, outputColStreet) = street
+            ws.Cells(currentRow, outputColCity) = city
+            ws.Cells(currentRow, outputColState) = state
+        End If
+
+        GoTo NextRow
+ErrorHandler:
+        ws.Cells(errorRow, 1) = "Error at row " & currentRow
+        errorRow = errorRow + 1
+        Resume Next
+NextRow:
+    Next currentRow
+
+    ' Write array to worksheet (if used)
+    If IsArray(dataArray) Then
+        ws.Range(ws.Cells(2, outputColStreet), ws.Cells(lastRow, outputColState)) = dataArray
+    End If
+End Sub
