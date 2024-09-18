@@ -1,0 +1,54 @@
+Sub AddColumnAndFilterData()
+
+    Dim ws As Worksheet
+    Dim newWs As Worksheet
+    Dim lastRow As Long
+    Dim timeElementCol As Long
+    Dim pdfCol As Long
+    Dim buildingCol As Long
+    Dim otherCol As Long
+    Dim contentCol As Long
+    Dim i As Long
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to your sheet name
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+
+    ' Identify the columns
+    timeElementCol = Application.WorksheetFunction.Match("timeelement", ws.Rows(1), 0)
+    buildingCol = Application.WorksheetFunction.Match("building", ws.Rows(1), 0)
+    otherCol = Application.WorksheetFunction.Match("other", ws.Rows(1), 0)
+    contentCol = Application.WorksheetFunction.Match("content", ws.Rows(1), 0)
+
+    ' Add new column for PD
+    pdfCol = timeElementCol + 1
+    ws.Cells(1, pdfCol).Value = "PD"
+
+    ' Calculate row-wise sum and assign to PD column
+    For i = 2 To lastRow
+        ws.Cells(i, pdfCol).Value = ws.Cells(i, buildingCol).Value + _
+                                      ws.Cells(i, otherCol).Value + _
+                                      ws.Cells(i, contentCol).Value
+    Next i
+
+    ' Create a new sheet for filtered data
+    Set newWs = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    newWs.Name = "FilteredData"
+
+    ' Copy header
+    ws.Rows(1).Copy Destination:=newWs.Rows(1)
+
+    ' Apply filters
+    ws.Range("A1").AutoFilter Field:=timeElementCol, Criteria1:="<>0"
+    ws.Range("A1").AutoFilter Field:=pdfCol, Criteria1:="<>0"
+
+    ' Copy visible cells to new sheet
+    ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, pdfCol)).SpecialCells(xlCellTypeVisible).Copy _
+        Destination:=newWs.Cells(2, 1)
+
+    ' Turn off filtering
+    ws.AutoFilterMode = False
+
+    MsgBox "Data filtered and copied to 'FilteredData' sheet."
+
+End Sub
