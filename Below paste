@@ -1,0 +1,35 @@
+Sub CopyDataWithoutHeaders()
+    ' Define variables
+    Dim sourceSheet As Worksheet
+    Dim destinationSheet As Worksheet
+    Dim sourceRange As Range
+    Dim destinationRange As Range
+    Dim lastRowSource As Long
+    Dim lastRowDestination As Long
+    
+    ' Set the source and destination sheets
+    Set sourceSheet = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to the name of your source sheet
+    Set destinationSheet = ThisWorkbook.Sheets("Sheet2") ' Change "Sheet2" to the name of your destination sheet
+    
+    ' Find the last row in the source sheet (assuming data starts in column A)
+    lastRowSource = sourceSheet.Cells(sourceSheet.Rows.Count, 1).End(xlUp).Row
+    
+    ' Define the range to copy from the source sheet (excluding headers, assuming headers are in the first row)
+    Set sourceRange = sourceSheet.Range("A2:D" & lastRowSource) ' Change "A2:D" to match your range (starting from row 2)
+    
+    ' Find the last row with data in the destination sheet
+    lastRowDestination = destinationSheet.Cells(destinationSheet.Rows.Count, 1).End(xlUp).Row
+    
+    ' Define where to paste in the destination sheet (paste below the last row)
+    Set destinationRange = destinationSheet.Cells(lastRowDestination + 1, 1) ' Paste starting one row below the last data row
+    
+    ' Copy the source range and paste into the destination range
+    sourceRange.Copy
+    destinationRange.PasteSpecial Paste:=xlPasteValues ' Paste values only (change to xlPasteAll to paste everything)
+    
+    ' Clear clipboard
+    Application.CutCopyMode = False
+    
+    ' Optional: Display message when done
+    MsgBox "Data copied successfully!"
+End Sub
