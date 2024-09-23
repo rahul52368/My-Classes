@@ -1,0 +1,58 @@
+Sub ImportData()
+    Dim wsSourceLoc As Worksheet, wsSourceCon As Worksheet, wsSourceWork As Worksheet
+    Dim wsDestLoc As Worksheet, wsDestCon As Worksheet, wsDestWork As Worksheet
+    Dim wbSource As Workbook
+    Dim filePath As String
+    Dim lastRow As Long, lastCol As Long
+    Dim destLastRow As Long
+
+    ' Ask the user to select a file
+    filePath = Application.GetOpenFilename("Excel Files (*.xls; *.xlsx), *.xls; *.xlsx", , "Select an Excel file")
+
+    ' If user cancels, exit the procedure
+    If filePath = "False" Then Exit Sub
+
+    ' Open the selected workbook
+    Set wbSource = Workbooks.Open(filePath)
+
+    ' Set worksheets from source workbook
+    On Error Resume Next
+    Set wsSourceLoc = wbSource.Sheets("Locations")
+    Set wsSourceCon = wbSource.Sheets("Contracts")
+    Set wsSourceWork = wbSource.Sheets("Working")
+    On Error GoTo 0
+
+    ' Ensure the sheets exist in the source workbook
+    If wsSourceLoc Is Nothing Or wsSourceCon Is Nothing Or wsSourceWork Is Nothing Then
+        MsgBox "The required sheets (Locations, Contracts, or Working) are missing in the selected workbook.", vbExclamation
+        wbSource.Close False
+        Exit Sub
+    End If
+
+    ' Set destination worksheets in current workbook
+    Set wsDestLoc = ThisWorkbook.Sheets("Locations")
+    Set wsDestCon = ThisWorkbook.Sheets("Contracts")
+
+    ' Copy Locations sheet data (excluding headers)
+    lastRow = wsSourceLoc.Cells(wsSourceLoc.Rows.Count, 1).End(xlUp).Row
+    lastCol = wsSourceLoc.Cells(1, wsSourceLoc.Columns.Count).End(xlToLeft).Column
+    destLastRow = wsDestLoc.Cells(wsDestLoc.Rows.Count, 1).End(xlUp).Row
+    If destLastRow > 1 Then destLastRow = destLastRow + 1
+    wsSourceLoc.Range(wsSourceLoc.Cells(2, 1), wsSourceLoc.Cells(lastRow, lastCol)).Copy wsDestLoc.Cells(destLastRow, 1)
+
+    ' Copy Contracts sheet data (excluding headers)
+    lastRow = wsSourceCon.Cells(wsSourceCon.Rows.Count, 1).End(xlUp).Row
+    lastCol = wsSourceCon.Cells(1, wsSourceCon.Columns.Count).End(xlToLeft).Column
+    destLastRow = wsDestCon.Cells(wsDestCon.Rows.Count, 1).End(xlUp).Row
+    If destLastRow > 1 Then destLastRow = destLastRow + 1
+    wsSourceCon.Range(wsSourceCon.Cells(2, 1), wsSourceCon.Cells(lastRow, lastCol)).Copy wsDestCon.Cells(destLastRow, 1)
+
+    ' Copy the entire Working sheet to the current workbook
+    wsSourceWork.Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+
+    ' Close the source workbook without saving
+    wbSource.Close False
+
+    MsgBox "Data successfully imported!", vbInformation
+End Sub
+
