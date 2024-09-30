@@ -1,0 +1,39 @@
+Sub DeleteRowsWithBIInLocationID()
+    Dim ws As Worksheet
+    Dim locationIDCol As Long
+    Dim lastRow As Long
+    Dim cell As Range
+    Dim deleteRange As Range
+
+    ' Set your target worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    
+    ' Find the column with the "LocationID" header
+    On Error Resume Next
+    locationIDCol = ws.Rows(1).Find(What:="LocationID", LookIn:=xlValues, LookAt:=xlWhole, MatchCase:=False).Column
+    On Error GoTo 0
+
+    ' If the "LocationID" column is found
+    If locationIDCol > 0 Then
+        ' Find the last row with data in the target column
+        lastRow = ws.Cells(ws.Rows.Count, locationIDCol).End(xlUp).Row
+
+        ' Loop through each cell in the column and collect rows to delete
+        For Each cell In ws.Range(ws.Cells(2, locationIDCol), ws.Cells(lastRow, locationIDCol))
+            If cell.Value Like "BI*" Then
+                If deleteRange Is Nothing Then
+                    Set deleteRange = cell.EntireRow
+                Else
+                    Set deleteRange = Union(deleteRange, cell.EntireRow)
+                End If
+            End If
+        Next cell
+
+        ' Delete all collected rows at once
+        If Not deleteRange Is Nothing Then
+            deleteRange.Delete
+        End If
+    Else
+        MsgBox "LocationID column not found!", vbExclamation
+    End If
+End Sub
