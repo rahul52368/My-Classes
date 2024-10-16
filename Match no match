@@ -1,0 +1,32 @@
+Sub CheckMatches()
+    Dim wsSource As Worksheet
+    Dim wsTarget As Worksheet
+    Dim sourceRange As Range
+    Dim targetRange As Range
+    Dim cell As Range
+    Dim resultCell As Range
+    Dim found As Range
+
+    ' Set your source and target sheets
+    Set wsSource = ThisWorkbook.Sheets("Sheet1") ' Change to your source sheet name
+    Set wsTarget = ThisWorkbook.Sheets("Sheet2") ' Change to your target sheet name
+
+    ' Define the ranges to check
+    Set sourceRange = wsSource.Range("A1:A" & wsSource.Cells(wsSource.Rows.Count, "A").End(xlUp).Row) ' Adjust column as needed
+    Set targetRange = wsTarget.Range("A1:A" & wsTarget.Cells(wsTarget.Rows.Count, "A").End(xlUp).Row) ' Adjust column as needed
+
+    ' Loop through each cell in the source range
+    For Each cell In sourceRange
+        ' Check if the cell value exists in the target range
+        Set found = targetRange.Find(cell.Value, LookIn:=xlValues, LookAt:=xlWhole)
+
+        ' Determine the result
+        If Not found Is Nothing Then
+            cell.Offset(0, 1).Value = "match" ' Write "match" in the next column
+        Else
+            cell.Offset(0, 1).Value = "no match" ' Write "no match" in the next column
+        End If
+    Next cell
+
+    MsgBox "Check complete!"
+End Sub
