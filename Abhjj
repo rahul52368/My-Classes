@@ -1,0 +1,33 @@
+Sub RemovePffPwbInContracts()
+    Dim wsContracts As Worksheet
+    Dim lastRowContracts As Long
+    Dim cell As Range
+
+    ' Set reference to Contracts tab
+    Set wsContracts = ThisWorkbook.Sheets("Contracts")
+    
+    ' Turn off screen updating for faster execution
+    Application.ScreenUpdating = False
+    
+    ' Find the last row in Contracts tab
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, 1).End(xlUp).Row
+    
+    ' ---- Remove "+pff+pwb" from column K ----
+    For Each cell In wsContracts.Range("K1:K" & lastRowContracts)
+        If InStr(1, cell.Value, "+pff+pwb", vbTextCompare) > 0 Then
+            cell.Value = Replace(cell.Value, "+pff+pwb", "")
+        End If
+    Next cell
+    
+    ' ---- Remove "+pff+pwb" from column M ----
+    For Each cell In wsContracts.Range("M1:M" & lastRowContracts)
+        If InStr(1, cell.Value, "+pff+pwb", vbTextCompare) > 0 Then
+            cell.Value = Replace(cell.Value, "+pff+pwb", "")
+        End If
+    Next cell
+    
+    ' Turn on screen updating
+    Application.ScreenUpdating = True
+    
+    MsgBox "Operation completed: '+pff+pwb' has been removed from columns K and M.", vbInformation
+End Sub
