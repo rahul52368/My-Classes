@@ -1,0 +1,75 @@
+Sub CleanTrimBothSheets()
+    Dim wsLocations As Worksheet
+    Dim wsContracts As Worksheet
+    Dim rngLocations As Range
+    Dim rngContracts As Range
+    Dim dataLocations As Variant
+    Dim dataContracts As Variant
+    Dim i As Long, j As Long
+    Dim lastRowLocations As Long, lastColLocations As Long
+    Dim lastRowContracts As Long, lastColContracts As Long
+    
+    ' Set references to the worksheets
+    Set wsLocations = ThisWorkbook.Sheets("Locations")
+    Set wsContracts = ThisWorkbook.Sheets("Contracts")
+    
+    ' Turn off screen updating for faster execution
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+    
+    ' ---- Clean and trim Locations tab ----
+    
+    ' Find the last row and column in Locations tab
+    lastRowLocations = wsLocations.Cells(wsLocations.Rows.Count, 1).End(xlUp).Row
+    lastColLocations = wsLocations.Cells(1, wsLocations.Columns.Count).End(xlToLeft).Column
+    
+    ' Define the range to be cleaned and trimmed
+    Set rngLocations = wsLocations.Range(wsLocations.Cells(1, 1), wsLocations.Cells(lastRowLocations, lastColLocations))
+    
+    ' Load the range into a variant array for fast processing
+    dataLocations = rngLocations.Value
+    
+    ' Loop through the array and clean/trim each cell
+    For i = 1 To UBound(dataLocations, 1)
+        For j = 1 To UBound(dataLocations, 2)
+            If Not IsEmpty(dataLocations(i, j)) Then
+                dataLocations(i, j) = Application.WorksheetFunction.Trim(Application.WorksheetFunction.Clean(dataLocations(i, j)))
+            End If
+        Next j
+    Next i
+    
+    ' Write the cleaned and trimmed data back to the sheet
+    rngLocations.Value = dataLocations
+    
+    ' ---- Clean and trim Contracts tab ----
+    
+    ' Find the last row and column in Contracts tab
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, 1).End(xlUp).Row
+    lastColContracts = wsContracts.Cells(1, wsContracts.Columns.Count).End(xlToLeft).Column
+    
+    ' Define the range to be cleaned and trimmed
+    Set rngContracts = wsContracts.Range(wsContracts.Cells(1, 1), wsContracts.Cells(lastRowContracts, lastColContracts))
+    
+    ' Load the range into a variant array for fast processing
+    dataContracts = rngContracts.Value
+    
+    ' Loop through the array and clean/trim each cell
+    For i = 1 To UBound(dataContracts, 1)
+        For j = 1 To UBound(dataContracts, 2)
+            If Not IsEmpty(dataContracts(i, j)) Then
+                dataContracts(i, j) = Application.WorksheetFunction.Trim(Application.WorksheetFunction.Clean(dataContracts(i, j)))
+            End If
+        Next j
+    Next i
+    
+    ' Write the cleaned and trimmed data back to the sheet
+    rngContracts.Value = dataContracts
+    
+    ' Turn on screen updating, events, and recalculation
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+    
+    MsgBox "Data cleaning and trimming completed on both sheets!", vbInformation
+End Sub
