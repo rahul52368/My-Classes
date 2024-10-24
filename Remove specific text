@@ -1,0 +1,37 @@
+Sub CleanPNC()
+    Dim wsLocations As Worksheet
+    Dim wsContracts As Worksheet
+    Dim lastRowLocations As Long
+    Dim lastRowContracts As Long
+    Dim cell As Range
+    Dim userResponse As VbMsgBoxResult
+
+    ' Set references to worksheets
+    Set wsLocations = ThisWorkbook.Sheets("Locations")
+    Set wsContracts = ThisWorkbook.Sheets("Contracts")
+
+    ' Ask for user confirmation
+    userResponse = MsgBox("Do you want to remove everything except 'PNC' from cells containing 'PNC'?", vbYesNo + vbQuestion, "Confirm")
+
+    If userResponse = vbYes Then
+        ' Process "Locations" tab, column K
+        lastRowLocations = wsLocations.Cells(wsLocations.Rows.Count, "K").End(xlUp).Row
+        For Each cell In wsLocations.Range("K1:K" & lastRowLocations)
+            If InStr(1, cell.Value, "PNC", vbTextCompare) > 0 Then
+                cell.Value = "PNC"
+            End If
+        Next cell
+
+        ' Process "Contracts" tab, column H
+        lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, "H").End(xlUp).Row
+        For Each cell In wsContracts.Range("H1:H" & lastRowContracts)
+            If InStr(1, cell.Value, "PNC", vbTextCompare) > 0 Then
+                cell.Value = "PNC"
+            End If
+        Next cell
+
+        MsgBox "All cells containing 'PNC' have been cleaned.", vbInformation
+    Else
+        MsgBox "Operation canceled.", vbInformation
+    End If
+End Sub
