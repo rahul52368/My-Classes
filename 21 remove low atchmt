@@ -1,0 +1,40 @@
+Sub DeleteRowsBelowAttachmentPoint()
+    Dim contractsSheet As Worksheet
+    Dim locationSheet As Worksheet
+    Dim lastRow As Long
+    Dim locationLastRow As Long
+    Dim attachmentPointSum As Double
+    Dim attachmentPointColumn As Range
+    Dim cell As Range
+    Dim firstLowerRow As Long
+    Dim rowToDelete As Long
+    
+    ' Set the worksheets
+    Set contractsSheet = ThisWorkbook.Sheets("contracts")
+    Set locationSheet = ThisWorkbook.Sheets("Location")
+    
+    ' Find the last row in the "Contracts" sheet (Attachment Point column)
+    lastRow = contractsSheet.Cells(contractsSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Find the last row in the "Location" sheet (to get the sum of the specified columns)
+    locationLastRow = locationSheet.Cells(locationSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Calculate the sum of the four columns in the "Location" sheet (Building, Other, Content, BI)
+    attachmentPointSum = Application.WorksheetFunction.Sum(locationSheet.Range("Building:BI"))
+    
+    ' Find the first row in the "Attachment Point" column that is less than the sum
+    Set attachmentPointColumn = contractsSheet.Range("Attachment Point" & "2:" & "Attachment Point" & lastRow)
+    
+    firstLowerRow = -1
+    For Each cell In attachmentPointColumn
+        If cell.Value < attachmentPointSum Then
+            firstLowerRow = cell.Row
+            Exit For
+        End If
+    Next cell
+    
+    ' If we find the first row that is less than the sum, delete all rows below it
+    If firstLowerRow > 0 Then
+        contractsSheet.Rows(firstLowerRow + 1 & ":" & lastRow).Delete
+    End If
+End Sub
