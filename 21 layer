@@ -1,0 +1,50 @@
+Sub HighlightRowsBelowAttachmentPoint()
+    Dim contractsSheet As Worksheet
+    Dim locationSheet As Worksheet
+    Dim lastRowContracts As Long
+    Dim lastRowLocation As Long
+    Dim sumBuilding As Double, sumOther As Double, sumContent As Double, sumBI As Double
+    Dim attachmentPointColumn As Range
+    Dim attachmentPointCell As Range
+    Dim attachmentPointValue As Double
+    Dim i As Long
+    
+    ' Set the sheets
+    Set contractsSheet = ThisWorkbook.Sheets("contracts")
+    Set locationSheet = ThisWorkbook.Sheets("location")
+    
+    ' Find last rows in both sheets
+    lastRowContracts = contractsSheet.Cells(contractsSheet.Rows.Count, "A").End(xlUp).Row ' Assuming column A has data
+    lastRowLocation = locationSheet.Cells(locationSheet.Rows.Count, "A").End(xlUp).Row ' Assuming column A has data
+    
+    ' Calculate the sum of the required columns in the location sheet
+    sumBuilding = Application.WorksheetFunction.Sum(locationSheet.Range("building1:building" & lastRowLocation))
+    sumOther = Application.WorksheetFunction.Sum(locationSheet.Range("Other1:Other" & lastRowLocation))
+    sumContent = Application.WorksheetFunction.Sum(locationSheet.Range("Content1:Content" & lastRowLocation))
+    sumBI = Application.WorksheetFunction.Sum(locationSheet.Range("BI1:BI" & lastRowLocation))
+    
+    ' Total sum of the 4 columns
+    Dim totalSum As Double
+    totalSum = sumBuilding + sumOther + sumContent + sumBI
+    
+    ' Find the "attachment point" column in the contracts sheet
+    Set attachmentPointColumn = contractsSheet.Range("A1:A" & lastRowContracts) ' Assuming "attachment point" is in column A
+    
+    ' Find the first lower value from the bottom in the "attachment point" column
+    For i = lastRowContracts To 1 Step -1
+        If contractsSheet.Cells(i, attachmentPointColumn.Column).Value < totalSum Then
+            Set attachmentPointCell = contractsSheet.Cells(i, attachmentPointColumn.Column)
+            attachmentPointValue = attachmentPointCell.Value
+            Exit For
+        End If
+    Next i
+    
+    ' If an attachment point was found, highlight the rows below it
+    If Not attachmentPointCell Is Nothing Then
+        For i = attachmentPointCell.Row + 1 To lastRowContracts
+            contractsSheet.Rows(i).Interior.Color = RGB(255, 255, 0) ' Highlight with yellow color
+        Next i
+    Else
+        MsgBox "No attachment point found below the sum value."
+    End If
+End Sub
