@@ -25,13 +25,13 @@ Sub GenerateSequenceForAllRows()
             If limit1Value = Int(limit1Value) Then
                 limit1Formatted = Format(limit1Value / 1000000, "0") & "M" ' Whole numbers in millions
             Else
-                limit1Formatted = Format(limit1Value / 1000000, "0.0") & "M" ' Decimal numbers in millions
+                limit1Formatted = Format(limit1Value / 1000000, "0.##") & "M" ' Non-zero decimals in millions
             End If
         ElseIf limit1Value >= 1000 Then
             If limit1Value = Int(limit1Value) Then
                 limit1Formatted = Format(limit1Value / 1000, "0") & "k" ' Whole numbers in thousands
             Else
-                limit1Formatted = Format(limit1Value / 1000, "0.0") & "k" ' Decimal numbers in thousands
+                limit1Formatted = Format(limit1Value / 1000, "0.##") & "k" ' Non-zero decimals in thousands
             End If
         Else
             limit1Formatted = limit1Value ' For smaller values, just use the raw value
@@ -42,13 +42,13 @@ Sub GenerateSequenceForAllRows()
             If attachmentAmtValue = Int(attachmentAmtValue) Then
                 attachmentAmtFormatted = Format(attachmentAmtValue / 1000000, "0") & "M" ' Whole numbers in millions
             Else
-                attachmentAmtFormatted = Format(attachmentAmtValue / 1000000, "0.0") & "M" ' Decimal numbers in millions
+                attachmentAmtFormatted = Format(attachmentAmtValue / 1000000, "0.##") & "M" ' Non-zero decimals in millions
             End If
         ElseIf attachmentAmtValue >= 1000 Then
             If attachmentAmtValue = Int(attachmentAmtValue) Then
                 attachmentAmtFormatted = Format(attachmentAmtValue / 1000, "0") & "k" ' Whole numbers in thousands
             Else
-                attachmentAmtFormatted = Format(attachmentAmtValue / 1000, "0.0") & "k" ' Decimal numbers in thousands
+                attachmentAmtFormatted = Format(attachmentAmtValue / 1000, "0.##") & "k" ' Non-zero decimals in thousands
             End If
         Else
             attachmentAmtFormatted = attachmentAmtValue ' For smaller values, just use the raw value
