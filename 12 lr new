@@ -1,0 +1,43 @@
+Sub GenerateSequenceForLastRow()
+    Dim contractsSheet As Worksheet
+    Dim lastRow As Long
+    Dim limit1Value As Double
+    Dim attachmentAmtValue As Double
+    Dim limit1Formatted As String
+    Dim attachmentAmtFormatted As String
+    Dim sequence As String
+    
+    ' Set the contracts sheet
+    Set contractsSheet = ThisWorkbook.Sheets("contracts")
+    
+    ' Find the last row with data in the contracts sheet (assuming Limit1 is in column A and AttachmentAmt is in column B)
+    lastRow = contractsSheet.Cells(contractsSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Read the values from the last row in Limit1 (Column A) and AttachmentAmt (Column B)
+    limit1Value = contractsSheet.Cells(lastRow, 1).Value ' Column A for Limit1
+    attachmentAmtValue = contractsSheet.Cells(lastRow, 2).Value ' Column B for AttachmentAmt
+    
+    ' Format the Limit1 value
+    If limit1Value >= 1000000 Then
+        limit1Formatted = Format(limit1Value / 1000000, "0.0") & "M" ' For millions
+    ElseIf limit1Value >= 1000 Then
+        limit1Formatted = Format(limit1Value / 1000, "0.0") & "k" ' For thousands
+    Else
+        limit1Formatted = limit1Value ' For smaller values, just use the raw value
+    End If
+    
+    ' Format the AttachmentAmt value
+    If attachmentAmtValue >= 1000000 Then
+        attachmentAmtFormatted = Format(attachmentAmtValue / 1000000, "0.0") & "M" ' For millions
+    ElseIf attachmentAmtValue >= 1000 Then
+        attachmentAmtFormatted = Format(attachmentAmtValue / 1000, "0.0") & "k" ' For thousands
+    Else
+        attachmentAmtFormatted = attachmentAmtValue ' For smaller values, just use the raw value
+    End If
+    
+    ' Generate the sequence
+    sequence = limit1Formatted & "xs" & attachmentAmtFormatted
+    
+    ' Write the sequence in the "Layer" column (Assuming "Layer" is in Column C)
+    contractsSheet.Cells(lastRow, 3).Value = sequence
+End Sub
