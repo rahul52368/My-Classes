@@ -1,0 +1,36 @@
+Sub DeleteRowsWhereAttachmentAmtGreaterThanSum()
+    Dim contractsSheet As Worksheet
+    Dim locationSheet As Worksheet
+    Dim lastRow As Long
+    Dim locationLastRow As Long
+    Dim attachmentPointSum As Double
+    Dim attachmentAmtValue As Double
+    Dim i As Long
+    
+    ' Set the worksheets
+    Set contractsSheet = ThisWorkbook.Sheets("contracts")
+    Set locationSheet = ThisWorkbook.Sheets("Location")
+    
+    ' Find the last row in the "Contracts" sheet (Attachment Amt column is in column B)
+    lastRow = contractsSheet.Cells(contractsSheet.Rows.Count, "B").End(xlUp).Row
+    
+    ' Find the last row in the "Location" sheet (to get the sum of the specified columns)
+    locationLastRow = locationSheet.Cells(locationSheet.Rows.Count, "B").End(xlUp).Row
+    
+    ' Calculate the sum of the four columns in the "Location" sheet (Building, Other, Content, BI)
+    attachmentPointSum = Application.WorksheetFunction.Sum(locationSheet.Range("B2:B" & locationLastRow)) + _
+                         Application.WorksheetFunction.Sum(locationSheet.Range("C2:C" & locationLastRow)) + _
+                         Application.WorksheetFunction.Sum(locationSheet.Range("D2:D" & locationLastRow)) + _
+                         Application.WorksheetFunction.Sum(locationSheet.Range("E2:E" & locationLastRow))
+    
+    ' Loop through each row in the Contracts sheet (starting from row 2)
+    For i = lastRow To 2 Step -1 ' Start from the last row and loop upwards to avoid skipping rows when deleting
+        ' Read the value of AttachmentAmt in column B
+        attachmentAmtValue = contractsSheet.Cells(i, 2).Value
+        
+        ' If AttachmentAmt is greater than the sum of Building, Other, Content, and BI, delete the row
+        If attachmentAmtValue > attachmentPointSum Then
+            contractsSheet.Rows(i).Delete
+        End If
+    Next i
+End Sub
