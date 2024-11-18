@@ -30,5 +30,13 @@ Sub DeleteRowsBelowAttachmentPoint()
     firstLowerRow = -1
     For Each cell In attachmentPointColumn
         If cell.Value < attachmentPointSum Then
-
-            
+            firstLowerRow = cell.Row
+            Exit For
+        End If
+    Next cell
+    
+    ' If we find the first row that is less than the sum, delete all rows below it
+    If firstLowerRow > 0 Then
+        contractsSheet.Rows(firstLowerRow + 1 & ":" & lastRow).Delete
+    End If
+End Sub
