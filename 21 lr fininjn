@@ -1,0 +1,91 @@
+Sub GenerateSequenceForAllRows()
+    Dim contractsSheet As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim limit1Value As Double
+    Dim attachmentAmtValue As Double
+    Dim limit1Formatted As String
+    Dim attachmentAmtFormatted As String
+    Dim sequence As String
+    
+    ' Set the contracts sheet
+    Set contractsSheet = ThisWorkbook.Sheets("contracts")
+    
+    ' Find the last row with data in the contracts sheet (assuming Limit1 is in column A and AttachmentAmt is in column B)
+    lastRow = contractsSheet.Cells(contractsSheet.Rows.Count, "A").End(xlUp).Row
+    
+    ' Loop through each row from row 2 to the last row
+    For i = 2 To lastRow
+        ' Read the values from the current row in Limit1 (Column A) and AttachmentAmt (Column B)
+        limit1Value = contractsSheet.Cells(i, 1).Value ' Column A for Limit1
+        attachmentAmtValue = contractsSheet.Cells(i, 2).Value ' Column B for AttachmentAmt
+        
+        ' Format the Limit1 value (remove .0 if it's a whole number)
+        If limit1Value >= 1000000 Then
+            ' If it's an integer value, keep the decimal part
+            If limit1Value = Int(limit1Value) Then
+                ' Whole number in millions, remove decimal
+                limit1Formatted = CStr(limit1Value / 1000000) & "M"
+            Else
+                ' Non-zero decimal in millions
+                limit1Formatted = Format(limit1Value / 1000000, "0.0") & "M"
+                ' Remove trailing zeroes after the decimal if it is an integer (e.g., 2.0M should be 2M)
+                If Right(limit1Formatted, 2) = ".0" Then
+                    limit1Formatted = Left(limit1Formatted, Len(limit1Formatted) - 2) & "M"
+                End If
+            End If
+        ElseIf limit1Value >= 1000 Then
+            ' If it's an integer value, keep the decimal part
+            If limit1Value = Int(limit1Value) Then
+                ' Whole number in thousands, remove decimal
+                limit1Formatted = CStr(limit1Value / 1000) & "k"
+            Else
+                ' Non-zero decimal in thousands
+                limit1Formatted = Format(limit1Value / 1000, "0.0") & "k"
+                ' Remove trailing zeroes after the decimal if it is an integer (e.g., 2.0k should be 2k)
+                If Right(limit1Formatted, 2) = ".0" Then
+                    limit1Formatted = Left(limit1Formatted, Len(limit1Formatted) - 2) & "k"
+                End If
+            End If
+        Else
+            limit1Formatted = CStr(limit1Value) ' For smaller values, just use the raw value
+        End If
+        
+        ' Format the AttachmentAmt value (remove .0 if it's a whole number)
+        If attachmentAmtValue >= 1000000 Then
+            ' If it's an integer value, keep the decimal part
+            If attachmentAmtValue = Int(attachmentAmtValue) Then
+                ' Whole number in millions, remove decimal
+                attachmentAmtFormatted = CStr(attachmentAmtValue / 1000000) & "M"
+            Else
+                ' Non-zero decimal in millions
+                attachmentAmtFormatted = Format(attachmentAmtValue / 1000000, "0.0") & "M"
+                ' Remove trailing zeroes after the decimal if it is an integer (e.g., 2.0M should be 2M)
+                If Right(attachmentAmtFormatted, 2) = ".0" Then
+                    attachmentAmtFormatted = Left(attachmentAmtFormatted, Len(attachmentAmtFormatted) - 2) & "M"
+                End If
+            End If
+        ElseIf attachmentAmtValue >= 1000 Then
+            ' If it's an integer value, keep the decimal part
+            If attachmentAmtValue = Int(attachmentAmtValue) Then
+                ' Whole number in thousands, remove decimal
+                attachmentAmtFormatted = CStr(attachmentAmtValue / 1000) & "k"
+            Else
+                ' Non-zero decimal in thousands
+                attachmentAmtFormatted = Format(attachmentAmtValue / 1000, "0.0") & "k"
+                ' Remove trailing zeroes after the decimal if it is an integer (e.g., 2.0k should be 2k)
+                If Right(attachmentAmtFormatted, 2) = ".0" Then
+                    attachmentAmtFormatted = Left(attachmentAmtFormatted, Len(attachmentAmtFormatted) - 2) & "k"
+                End If
+            End If
+        Else
+            attachmentAmtFormatted = CStr(attachmentAmtValue) ' For smaller values, just use the raw value
+        End If
+        
+        ' Generate the sequence
+        sequence = limit1Formatted & "xs" & attachmentAmtFormatted
+        
+        ' Write the sequence in the "Layer" column (Column C)
+        contractsSheet.Cells(i, 3).Value = sequence
+    Next i
+End Sub
