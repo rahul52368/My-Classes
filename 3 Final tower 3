@@ -1,0 +1,145 @@
+Sub DeleteRowsAndModify()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim firstValue As String
+    Dim i As Long
+    Dim targetRow As Long
+    Dim qValue As Double
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Contract") ' Adjust the sheet name if necessary
+    
+    ' Find the last row with data in column L
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+    
+    ' Get the first value in column L (excluding the header)
+    firstValue = ws.Cells(2, "L").Value
+    
+    ' Loop through the rows to find where the set ends (starting from row 2)
+    For i = 2 To lastRow
+        If ws.Cells(i, "L").Value <> firstValue Then
+            ' Delete all rows below this set (starting from the first row of non-matching values)
+            ws.Rows(i & ":" & lastRow).Delete
+            Exit For
+        End If
+    Next i
+    
+    ' After deletion, reset the lastRow value
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+    
+    ' Set column Q to 0 for the remaining rows (excluding the header)
+    For i = 2 To lastRow
+        ws.Cells(i, "Q").Value = 0
+    Next i
+    
+    ' Initialize variables for copying and pasting rows
+    targetRow = lastRow + 1
+    qValue = 2500000 ' Starting value for column Q
+    
+    ' Continue copying and pasting until Q reaches 17,500,000
+    Do While qValue <= 17500000
+        ' Copy the rows from 2 to lastRow (excluding the header)
+        ws.Rows("2:" & lastRow).Copy
+        
+        ' Paste the rows below the existing rows
+        ws.Rows(targetRow).PasteSpecial Paste:=xlPasteAll
+        
+        ' Set column Q in the pasted rows to the current qValue and update O & P
+        For i = targetRow To targetRow + lastRow - 2 ' Start from targetRow and avoid header
+            ws.Cells(i, "Q").Value = qValue
+            
+            ' Set columns O and P based on Q value
+            If qValue <= 17500000 Then
+                ws.Cells(i, "O").Value = 2500000
+                ws.Cells(i, "P").Value = 2500000
+            End If
+        Next i
+        
+        ' Update targetRow to paste the next set of rows below
+        targetRow = targetRow + lastRow - 1
+        
+        ' Increase qValue by 2,500,000 for the next set of rows
+        qValue = qValue + 2500000
+    Loop
+    
+    ' Continue the process with increments of 5,000,000 after reaching 20,000,000
+    qValue = 20000000 ' Starting from 20,000,000
+    
+    ' Loop until Q reaches 45,000,000
+    Do While qValue <= 45000000
+        ' Copy the rows from 2 to lastRow (excluding the header)
+        ws.Rows("2:" & lastRow).Copy
+        
+        ' Paste the rows below the existing rows
+        ws.Rows(targetRow).PasteSpecial Paste:=xlPasteAll
+        
+        ' Set column Q in the pasted rows to the current qValue and update O & P
+        For i = targetRow To targetRow + lastRow - 2 ' Start from targetRow and avoid header
+            ws.Cells(i, "Q").Value = qValue
+            
+            ' Set columns O and P based on Q value
+            If qValue >= 20000000 And qValue <= 45000000 Then
+                ws.Cells(i, "O").Value = 5000000
+                ws.Cells(i, "P").Value = 5000000
+            End If
+        Next i
+        
+        ' Update targetRow to paste the next set of rows below
+        targetRow = targetRow + lastRow - 1
+        
+        ' Increase qValue by 5,000,000 for the next set of rows
+        qValue = qValue + 5000000
+    Loop
+    
+    ' Continue the process with increments of 25,000,000 after reaching 50,000,000
+    qValue = 50000000 ' Starting from 50,000,000
+    
+    ' Loop until Q reaches 175,000,000
+    Do While qValue <= 175000000
+        ' Copy the rows from 2 to lastRow (excluding the header)
+        ws.Rows("2:" & lastRow).Copy
+        
+        ' Paste the rows below the existing rows
+        ws.Rows(targetRow).PasteSpecial Paste:=xlPasteAll
+        
+        ' Set column Q in the pasted rows to the current qValue and update O & P
+        For i = targetRow To targetRow + lastRow - 2 ' Start from targetRow and avoid header
+            ws.Cells(i, "Q").Value = qValue
+            
+            ' Set columns O and P based on Q value
+            If qValue >= 50000000 And qValue <= 175000000 Then
+                ws.Cells(i, "O").Value = 25000000
+                ws.Cells(i, "P").Value = 25000000
+            End If
+        Next i
+        
+        ' Update targetRow to paste the next set of rows below
+        targetRow = targetRow + lastRow - 1
+        
+        ' Increase qValue by 25,000,000 for the next set of rows
+        qValue = qValue + 25000000
+    Loop
+    
+    ' Once Q reaches 200,000,000, paste with a value of 50,000,000 for O and P
+    If qValue > 175000000 Then
+        ' Copy the rows from 2 to lastRow (excluding the header)
+        ws.Rows("2:" & lastRow).Copy
+        
+        ' Paste the rows below the existing rows
+        ws.Rows(targetRow).PasteSpecial Paste:=xlPasteAll
+        
+        ' Set column Q in the pasted rows to 250,000,000
+        For i = targetRow To targetRow + lastRow - 2 ' Start from targetRow and avoid header
+            ws.Cells(i, "Q").Value = 250000000
+            
+            ' Set columns O and P for 250,000,000
+            If ws.Cells(i, "Q").Value = 250000000 Then
+                ws.Cells(i, "O").Value = 250000000
+                ws.Cells(i, "P").Value = 250000000
+            End If
+        Next i
+    End If
+    
+    ' Clear any clipboard data
+    Application.CutCopyMode = False
+End Sub
