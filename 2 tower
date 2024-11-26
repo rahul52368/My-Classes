@@ -1,0 +1,61 @@
+Sub DeleteRowsAndModify()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim firstValue As String
+    Dim i As Long
+    Dim targetRow As Long
+    Dim qValue As Double
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Contract") ' Adjust the sheet name if necessary
+    
+    ' Find the last row with data in column L
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+    
+    ' Get the first value in column L
+    firstValue = ws.Cells(1, "L").Value
+    
+    ' Loop through the rows to find where the set ends
+    For i = 1 To lastRow
+        If ws.Cells(i, "L").Value <> firstValue Then
+            ' Delete all rows below this set
+            ws.Rows(i & ":" & lastRow).Delete
+            Exit For
+        End If
+    Next i
+    
+    ' After deletion, reset the lastRow value
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+    
+    ' Set column Q to 0 for the remaining rows
+    For i = 1 To lastRow
+        ws.Cells(i, "Q").Value = 0
+    Next i
+    
+    ' Initialize variables for copying and pasting rows
+    targetRow = lastRow + 1
+    qValue = 2500000 ' Starting value for column Q
+    
+    ' Continue copying and pasting until Q reaches 20000000
+    Do While qValue <= 20000000
+        ' Copy the rows from 1 to lastRow
+        ws.Rows("1:" & lastRow).Copy
+        
+        ' Paste the rows below the existing rows
+        ws.Rows(targetRow).PasteSpecial Paste:=xlPasteAll
+        
+        ' Set column Q in the pasted rows to the current qValue
+        For i = targetRow To targetRow + lastRow - 1
+            ws.Cells(i, "Q").Value = qValue
+        Next i
+        
+        ' Update targetRow to paste the next set of rows below
+        targetRow = targetRow + lastRow
+        
+        ' Increase qValue by 2,500,000 for the next set of rows
+        qValue = qValue + 2500000
+    Loop
+    
+    ' Clear any clipboard data
+    Application.CutCopyMode = False
+End Sub
