@@ -80,7 +80,7 @@ Sub DeleteRowsAndModify()
     Loop
     
     ' Continue the process with increments of 25,000,000 after reaching 50,000,000
-    qValue = 25000000 ' Starting from 25,000,000 after 50,000,000
+    qValue = 75000000 ' Starting from 75,000,000
     
     ' Loop until Q reaches 200,000,000
     Do While qValue <= 200000000
