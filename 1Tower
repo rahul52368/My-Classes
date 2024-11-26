@@ -1,0 +1,24 @@
+Sub DeleteRowsBelowSet()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim firstValue As String
+    Dim i As Long
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Contract") ' Adjust the sheet name if necessary
+    
+    ' Find the last row with data in column L
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+    
+    ' Get the first value in column L
+    firstValue = ws.Cells(1, "L").Value
+    
+    ' Loop through the rows to find where the set ends
+    For i = 1 To lastRow
+        If ws.Cells(i, "L").Value <> firstValue Then
+            ' Delete all rows below this set
+            ws.Rows(i & ":" & lastRow).Delete
+            Exit Sub
+        End If
+    Next i
+End Sub
