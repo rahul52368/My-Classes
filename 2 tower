@@ -12,13 +12,13 @@ Sub DeleteRowsAndModify()
     ' Find the last row with data in column L
     lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
     
-    ' Get the first value in column L
-    firstValue = ws.Cells(1, "L").Value
+    ' Get the first value in column L (excluding the header)
+    firstValue = ws.Cells(2, "L").Value
     
-    ' Loop through the rows to find where the set ends
-    For i = 1 To lastRow
+    ' Loop through the rows to find where the set ends (starting from row 2)
+    For i = 2 To lastRow
         If ws.Cells(i, "L").Value <> firstValue Then
-            ' Delete all rows below this set
+            ' Delete all rows below this set (starting from the first row of non-matching values)
             ws.Rows(i & ":" & lastRow).Delete
             Exit For
         End If
@@ -27,8 +27,8 @@ Sub DeleteRowsAndModify()
     ' After deletion, reset the lastRow value
     lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
     
-    ' Set column Q to 0 for the remaining rows
-    For i = 1 To lastRow
+    ' Set column Q to 0 for the remaining rows (excluding the header)
+    For i = 2 To lastRow
         ws.Cells(i, "Q").Value = 0
     Next i
     
@@ -38,19 +38,19 @@ Sub DeleteRowsAndModify()
     
     ' Continue copying and pasting until Q reaches 20000000
     Do While qValue <= 20000000
-        ' Copy the rows from 1 to lastRow
-        ws.Rows("1:" & lastRow).Copy
+        ' Copy the rows from 2 to lastRow (excluding the header)
+        ws.Rows("2:" & lastRow).Copy
         
         ' Paste the rows below the existing rows
         ws.Rows(targetRow).PasteSpecial Paste:=xlPasteAll
         
         ' Set column Q in the pasted rows to the current qValue
-        For i = targetRow To targetRow + lastRow - 1
+        For i = targetRow To targetRow + lastRow - 2 ' Start from targetRow and avoid header
             ws.Cells(i, "Q").Value = qValue
         Next i
         
         ' Update targetRow to paste the next set of rows below
-        targetRow = targetRow + lastRow
+        targetRow = targetRow + lastRow - 1
         
         ' Increase qValue by 2,500,000 for the next set of rows
         qValue = qValue + 2500000
