@@ -134,25 +134,18 @@ Sub ModifyAndRepeatRowsContractsAndDeleteRows()
         End Select
     Next j
 
-    ' Step 2: Handle "contracts" tab - Sum N, O, P, Q and delete rows
-    lastRowContractsToDelete = wsContracts.Cells(wsContracts.Rows.Count, "Q").End(xlUp).Row
-    
-    ' Ensure there is data in columns N, O, P, Q
-    If lastRowContractsToDelete < 2 Then
-        MsgBox "No data found in 'contracts' tab!", vbExclamation
-        Exit Sub
-    End If
-
-    ' Calculate the sum of columns N, O, P, and Q
-    sumN = Application.WorksheetFunction.Sum(wsContracts.Range("N2:N" & lastRowContractsToDelete))
-    sumO = Application.WorksheetFunction.Sum(wsContracts.Range("O2:O" & lastRowContractsToDelete))
-    sumP = Application.WorksheetFunction.Sum(wsContracts.Range("P2:P" & lastRowContractsToDelete))
-    sumQ = Application.WorksheetFunction.Sum(wsContracts.Range("Q2:Q" & lastRowContractsToDelete))
+    ' Step 2: Handle "locations" tab - Sum N, O, P, Q and delete rows in "contracts"
+    ' Get the sum of N, O, P, Q columns in "locations" tab
+    sumN = Application.WorksheetFunction.Sum(wsLocations.Range("N2:N" & wsLocations.Cells(wsLocations.Rows.Count, "N").End(xlUp).Row))
+    sumO = Application.WorksheetFunction.Sum(wsLocations.Range("O2:O" & wsLocations.Cells(wsLocations.Rows.Count, "O").End(xlUp).Row))
+    sumP = Application.WorksheetFunction.Sum(wsLocations.Range("P2:P" & wsLocations.Cells(wsLocations.Rows.Count, "P").End(xlUp).Row))
+    sumQ = Application.WorksheetFunction.Sum(wsLocations.Range("Q2:Q" & wsLocations.Cells(wsLocations.Rows.Count, "Q").End(xlUp).Row))
 
     ' Calculate the total sum of N, O, P, Q
     totalSum = sumN + sumO + sumP + sumQ
 
-    ' Delete rows where Q > total sum
+    ' Delete rows from the "contracts" tab where Q > totalSum
+    lastRowContractsToDelete = wsContracts.Cells(wsContracts.Rows.Count, "Q").End(xlUp).Row
     For i = lastRowContractsToDelete To 2 Step -1
         If wsContracts.Cells(i, "Q").Value > totalSum Then
             wsContracts.Rows(i).Delete
