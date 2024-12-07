@@ -1,0 +1,176 @@
+Sub ModifyAndRepeatRowsContractsAndDeleteRowsAndAdjustValues()
+    Dim wsContracts As Worksheet
+    Dim wsLocations As Worksheet
+    Dim lastRowContracts As Long, startRow As Long, endRow As Long
+    Dim uniqueValue As String
+    Dim copyRange As Range, pasteRow As Long
+    Dim newValues As Variant
+    Dim i As Long, j As Long
+    Dim currentValue As String, afterXsValue As String
+    Dim sumN As Double, sumO As Double, sumP As Double, sumQ As Double, totalSum As Double
+    Dim lastRowContractsToDelete As Long
+    Dim lastQValue As Double, remainingSum As Double
+    Dim lastLValue As String
+    
+    ' Define the new values for column L
+    newValues = Array("2.5Mxs2.5M", "2.5Mxs5M", "2.5Mxs7.5M", "2.5Mxs10M", "2.5Mxs12.5M", _
+                      "2.5Mxs15M", "2.5Mxs17.5M", "5Mxs20", "5Mxs25", "5Mxs30", _
+                      "5Mxs35M", "5Mxs40M", "5Mxs45M", "25Mxs50M", "25Mxs75M", _
+                      "25Mxs100M", "25Mxs125M", "25Mxs150M", "25Mxs175M", "50Mxs200M", "250Mxs250M")
+
+    ' Set the worksheets to "contracts" and "locations"
+    Set wsContracts = ThisWorkbook.Sheets("contracts")
+    Set wsLocations = ThisWorkbook.Sheets("locations")
+
+    ' Step 1: Handle "contracts" tab
+    ' Find the last row in the sheet for column L in "contracts"
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, "L").End(xlUp).Row
+
+    ' Ensure there is data beyond the header
+    If lastRowContracts < 2 Then
+        MsgBox "No data found in column L of 'contracts' tab!", vbExclamation
+        Exit Sub
+    End If
+
+    ' Identify the first unique value in column L (starting from row 2)
+    uniqueValue = wsContracts.Cells(2, "L").Value
+    startRow = 2
+    endRow = startRow
+
+    ' Find the end of the first set
+    Do While wsContracts.Cells(endRow + 1, "L").Value = uniqueValue
+        endRow = endRow + 1
+    Loop
+
+    ' Delete all rows below the first set
+    If endRow < lastRowContracts Then
+        wsContracts.Rows(endRow + 1 & ":" & lastRowContracts).Delete
+    End If
+
+    ' Define the range to copy
+    Set copyRange = wsContracts.Rows(startRow & ":" & endRow)
+
+    ' Paste 21 times and modify column L
+    pasteRow = endRow + 1
+    For i = LBound(newValues) To UBound(newValues)
+        ' Copy and paste the range
+        copyRange.Copy Destination:=wsContracts.Rows(pasteRow)
+        
+        ' Update column L with the new value
+        wsContracts.Range("L" & pasteRow & ":L" & pasteRow + endRow - startRow).Value = newValues(i)
+        
+        ' Move to the next paste row
+        pasteRow = pasteRow + (endRow - startRow + 1)
+    Next i
+
+    ' Assign values to columns O, P, and Q based on column L
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, "L").End(xlUp).Row
+    For j = 2 To lastRowContracts
+        currentValue = wsContracts.Cells(j, "L").Value
+        ' Assign values to O and P
+        Select Case True
+            Case Left(currentValue, 4) = "2.5M"
+                wsContracts.Cells(j, "O").Value = 2500000
+                wsContracts.Cells(j, "P").Value = 2500000
+            Case Left(currentValue, 2) = "5M"
+                wsContracts.Cells(j, "O").Value = 5000000
+                wsContracts.Cells(j, "P").Value = 5000000
+            Case Left(currentValue, 3) = "25M"
+                wsContracts.Cells(j, "O").Value = 25000000
+                wsContracts.Cells(j, "P").Value = 25000000
+            Case Left(currentValue, 3) = "50M"
+                wsContracts.Cells(j, "O").Value = 50000000
+                wsContracts.Cells(j, "P").Value = 50000000
+            Case Left(currentValue, 4) = "250M"
+                wsContracts.Cells(j, "O").Value = 250000000
+                wsContracts.Cells(j, "P").Value = 250000000
+        End Select
+        
+        ' Extract the text after "xs" for column Q
+        afterXsValue = Trim(Mid(currentValue, InStr(currentValue, "xs") + 2))
+        Select Case True
+            Case afterXsValue = "0"
+                wsContracts.Cells(j, "Q").Value = 0
+            Case afterXsValue = "2.5M"
+                wsContracts.Cells(j, "Q").Value = 2500000
+            Case afterXsValue = "5M"
+                wsContracts.Cells(j, "Q").Value = 5000000
+            Case afterXsValue = "7.5M"
+                wsContracts.Cells(j, "Q").Value = 7500000
+            Case afterXsValue = "10M"
+                wsContracts.Cells(j, "Q").Value = 10000000
+            Case afterXsValue = "12.5M"
+                wsContracts.Cells(j, "Q").Value = 12500000
+            Case afterXsValue = "15M"
+                wsContracts.Cells(j, "Q").Value = 15000000
+            Case afterXsValue = "17.5M"
+                wsContracts.Cells(j, "Q").Value = 17500000
+            Case afterXsValue = "20"
+                wsContracts.Cells(j, "Q").Value = 20000000
+            Case afterXsValue = "25"
+                wsContracts.Cells(j, "Q").Value = 25000000
+            Case afterXsValue = "30"
+                wsContracts.Cells(j, "Q").Value = 30000000
+            Case afterXsValue = "35M"
+                wsContracts.Cells(j, "Q").Value = 35000000
+            Case afterXsValue = "40M"
+                wsContracts.Cells(j, "Q").Value = 40000000
+            Case afterXsValue = "45M"
+                wsContracts.Cells(j, "Q").Value = 45000000
+            Case afterXsValue = "50M"
+                wsContracts.Cells(j, "Q").Value = 50000000
+            Case afterXsValue = "75M"
+                wsContracts.Cells(j, "Q").Value = 75000000
+            Case afterXsValue = "100M"
+                wsContracts.Cells(j, "Q").Value = 100000000
+            Case afterXsValue = "125M"
+                wsContracts.Cells(j, "Q").Value = 125000000
+            Case afterXsValue = "150M"
+                wsContracts.Cells(j, "Q").Value = 150000000
+            Case afterXsValue = "175M"
+                wsContracts.Cells(j, "Q").Value = 175000000
+            Case afterXsValue = "200M"
+                wsContracts.Cells(j, "Q").Value = 200000000
+            Case afterXsValue = "250M"
+                wsContracts.Cells(j, "Q").Value = 250000000
+        End Select
+    Next j
+
+    ' Step 2: Handle "locations" tab - Sum N, O, P, Q and delete rows in "contracts"
+    ' Get the sum of N, O, P, Q columns in "locations" tab
+    sumN = Application.WorksheetFunction.Sum(wsLocations.Range("N2:N" & wsLocations.Cells(wsLocations.Rows.Count, "N").End(xlUp).Row))
+    sumO = Application.WorksheetFunction.Sum(wsLocations.Range("O2:O" & wsLocations.Cells(wsLocations.Rows.Count, "O").End(xlUp).Row))
+    sumP = Application.WorksheetFunction.Sum(wsLocations.Range("P2:P" & wsLocations.Cells(wsLocations.Rows.Count, "P").End(xlUp).Row))
+    sumQ = Application.WorksheetFunction.Sum(wsLocations.Range("Q2:Q" & wsLocations.Cells(wsLocations.Rows.Count, "Q").End(xlUp).Row))
+
+    ' Calculate the total sum of N, O, P, Q
+    totalSum = sumN + sumO + sumP + sumQ
+
+    ' Delete rows from the "contracts" tab where Q > totalSum
+    lastRowContractsToDelete = wsContracts.Cells(wsContracts.Rows.Count, "Q").End(xlUp).Row
+    For i = lastRowContractsToDelete To 2 Step -1
+        If wsContracts.Cells(i, "Q").Value > totalSum Then
+            wsContracts.Rows(i).Delete
+        End If
+    Next i
+
+    ' Step 3: Subtract the last value in column Q from the total sum
+    lastQValue = wsContracts.Cells(wsContracts.Cells(wsContracts.Rows.Count, "Q").End(xlUp).Row, "Q").Value
+    remainingSum = totalSum - lastQValue
+    
+    ' Get the last unique value in column L
+    lastLValue = wsContracts.Cells(wsContracts.Cells(wsContracts.Rows.Count, "L").End(xlUp).Row, "L").Value
+    
+    ' Update columns O and P where column L matches the last unique value
+    For i = 2 To lastRowContracts
+        If wsContracts.Cells(i, "L").Value = lastLValue Then
+            wsContracts.Cells(i, "O").Value = remainingSum
+            wsContracts.Cells(i, "P").Value = remainingSum
+        End If
+    Next i
+
+    ' Clear the clipboard
+    Application.CutCopyMode = False
+
+    MsgBox "Operation completed successfully on 'contracts' tab!", vbInformation
+End Sub
