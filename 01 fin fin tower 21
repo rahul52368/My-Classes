@@ -141,15 +141,8 @@ Sub ModifyAndRepeatRowsContractsAndDeleteRowsAndAdjustValues()
         formattedTextQ = Format(lastQValueInContracts / 1000000, "0.0") & "M"
     End If
 
-    ' Combine and put in the last L cell (same last value of L)
+    ' Combine and put in the last L cell
     formattedText = formattedTextO & formattedTextQ
-
-    ' Loop through all rows again to place the text only in the last same value of column L
-    For i = lastRowContracts To 2 Step -1
-        If wsContracts.Cells(i, "L").Value = lastLValue Then
-            wsContracts.Cells(i, "L").Value = formattedText
-            Exit For ' Only update the last matching cell
-        End If
-    Next i
+    wsContracts.Cells(lastRowContracts, "L").Value = formattedText
 
 End Sub
