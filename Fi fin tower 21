@@ -1,0 +1,159 @@
+Sub ModifyAndRepeatRowsContractsAndDeleteRowsAndAdjustValues()
+    Dim wsContracts As Worksheet
+    Dim wsLocations As Worksheet
+    Dim lastRowContracts As Long, startRow As Long, endRow As Long
+    Dim uniqueValue As String
+    Dim copyRange As Range, pasteRow As Long
+    Dim newValues As Variant
+    Dim i As Long, j As Long
+    Dim currentValue As String, afterXsValue As String
+    Dim sumN As Double, sumO As Double, sumP As Double, sumQ As Double, totalSum As Double
+    Dim lastRowContractsToDelete As Long
+    Dim lastQValue As Double, remainingSum As Double
+    Dim lastLValue As String
+    Dim lastOValue As Double, lastQValueInContracts As Double
+    Dim formattedText As String, formattedTextQ As String
+    Dim formattedTextO As String
+    Dim lastSameCell As Range
+
+    ' Define the new values for column L
+    newValues = Array("2.5Mxs2.5M", "2.5Mxs5M", "2.5Mxs7.5M", "2.5Mxs10M", "2.5Mxs12.5M", _
+                      "2.5Mxs15M", "2.5Mxs17.5M", "5Mxs20", "5Mxs25", "5Mxs30", _
+                      "5Mxs35M", "5Mxs40M", "5Mxs45M", "25Mxs50M", "25Mxs75M", _
+                      "25Mxs100M", "25Mxs125M", "25Mxs150M", "25Mxs175M", "50Mxs200M", "250Mxs250M")
+
+    ' Set the worksheets to "contracts" and "locations"
+    Set wsContracts = ThisWorkbook.Sheets("contracts")
+    Set wsLocations = ThisWorkbook.Sheets("locations")
+
+    ' Step 1: Handle "contracts" tab
+    ' Find the last row in the sheet for column L in "contracts"
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, "L").End(xlUp).Row
+
+    ' Ensure there is data beyond the header
+    If lastRowContracts < 2 Then
+        MsgBox "No data found in column L of 'contracts' tab!", vbExclamation
+        Exit Sub
+    End If
+
+    ' Identify the first unique value in column L (starting from row 2)
+    uniqueValue = wsContracts.Cells(2, "L").Value
+    startRow = 2
+    endRow = startRow
+
+    ' Find the end of the first set
+    Do While wsContracts.Cells(endRow + 1, "L").Value = uniqueValue
+        endRow = endRow + 1
+    Loop
+
+    ' Delete all rows below the first set
+    If endRow < lastRowContracts Then
+        wsContracts.Rows(endRow + 1 & ":" & lastRowContracts).Delete
+    End If
+
+    ' Define the range to copy
+    Set copyRange = wsContracts.Rows(startRow & ":" & endRow)
+
+    ' Paste 21 times and modify column L
+    pasteRow = endRow + 1
+    For i = LBound(newValues) To UBound(newValues)
+        wsContracts.Rows(pasteRow).Insert Shift:=xlDown
+        copyRange.Copy Destination:=wsContracts.Rows(pasteRow)
+        wsContracts.Cells(pasteRow, "L").Value = newValues(i)
+        pasteRow = pasteRow + endRow - startRow + 1
+    Next i
+
+    ' Step 2: Adjust columns O, P, Q for the copied data
+    For i = startRow To pasteRow - 1
+        ' For column O and P, we will put values based on the pattern from the L column text
+        currentValue = wsContracts.Cells(i, "L").Value
+
+        If InStr(currentValue, "2.5M") > 0 Then
+            wsContracts.Cells(i, "O").Value = 2500000
+            wsContracts.Cells(i, "P").Value = 2500000
+        ElseIf InStr(currentValue, "5M") > 0 Then
+            wsContracts.Cells(i, "O").Value = 5000000
+            wsContracts.Cells(i, "P").Value = 5000000
+        ElseIf InStr(currentValue, "25M") > 0 Then
+            wsContracts.Cells(i, "O").Value = 25000000
+            wsContracts.Cells(i, "P").Value = 25000000
+        ElseIf InStr(currentValue, "50M") > 0 Then
+            wsContracts.Cells(i, "O").Value = 50000000
+            wsContracts.Cells(i, "P").Value = 50000000
+        ElseIf InStr(currentValue, "250M") > 0 Then
+            wsContracts.Cells(i, "O").Value = 250000000
+            wsContracts.Cells(i, "P").Value = 250000000
+        End If
+
+        ' For column Q, we will check the value after "xs" in column L and convert it
+        afterXsValue = Trim(Split(currentValue, "xs")(1))
+
+        If InStr(afterXsValue, "M") > 0 Then
+            afterXsValue = Replace(afterXsValue, "M", "") ' Remove the "M"
+            If IsNumeric(afterXsValue) Then
+                wsContracts.Cells(i, "Q").Value = CDbl(afterXsValue) * 1000000
+            End If
+        End If
+    Next i
+
+    ' Step 3: Handle rows in contracts based on the sum in locations tab
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, "L").End(xlUp).Row
+
+    ' Get sum of columns N, O, P, Q in locations sheet
+    sumN = Application.WorksheetFunction.Sum(wsLocations.Range("N2:N" & wsLocations.Cells(wsLocations.Rows.Count, "N").End(xlUp).Row))
+    sumO = Application.WorksheetFunction.Sum(wsLocations.Range("O2:O" & wsLocations.Cells(wsLocations.Rows.Count, "O").End(xlUp).Row))
+    sumP = Application.WorksheetFunction.Sum(wsLocations.Range("P2:P" & wsLocations.Cells(wsLocations.Rows.Count, "P").End(xlUp).Row))
+    sumQ = Application.WorksheetFunction.Sum(wsLocations.Range("Q2:Q" & wsLocations.Cells(wsLocations.Rows.Count, "Q").End(xlUp).Row))
+
+    totalSum = sumN + sumO + sumP + sumQ
+
+    ' Loop through rows and delete rows where column Q value is greater than the total sum
+    For i = lastRowContracts To 2 Step -1
+        If wsContracts.Cells(i, "Q").Value > totalSum Then
+            wsContracts.Rows(i).Delete
+        End If
+    Next i
+
+    ' Step 4: Subtract the last value of column Q and update columns O and P
+    lastRowContracts = wsContracts.Cells(wsContracts.Rows.Count, "L").End(xlUp).Row
+    lastQValue = wsContracts.Cells(lastRowContracts, "Q").Value
+
+    ' Subtract last Q value from the total sum
+    remainingSum = totalSum - lastQValue
+
+    ' Update column O and P where L column value matches the last L cell value
+    lastLValue = wsContracts.Cells(lastRowContracts, "L").Value
+    For i = 2 To lastRowContracts
+        If wsContracts.Cells(i, "L").Value = lastLValue Then
+            wsContracts.Cells(i, "O").Value = remainingSum
+            wsContracts.Cells(i, "P").Value = remainingSum
+        End If
+    Next i
+
+    ' Step 5: Update column L with the formatted text based on the last values in columns O and Q
+    lastOValue = wsContracts.Cells(lastRowContracts, "O").Value
+    lastQValueInContracts = wsContracts.Cells(lastRowContracts, "Q").Value
+
+    ' Format text based on O and Q
+    formattedTextO = Format(lastOValue / 1000000, "0.0") & "Mxs"
+    If InStr(CStr(lastQValueInContracts), ".0") > 0 Then
+        formattedTextQ = Format(lastQValueInContracts / 1000000, "0") & "M"
+    Else
+        formattedTextQ = Format(lastQValueInContracts / 1000000, "0.0") & "M"
+    End If
+
+    ' Combine the formatted text
+    formattedText = formattedTextO & formattedTextQ
+
+    ' Find the last same cell of column L (the last occurrence of the value in column L)
+    For i = lastRowContracts To 2 Step -1
+        If wsContracts.Cells(i, "L").Value = lastLValue Then
+            Set lastSameCell = wsContracts.Cells(i, "L")
+            Exit For
+        End If
+    Next i
+
+    ' At this stage, we have generated the formatted text but have not yet pasted it into the last same cells of column L.
+    ' You can add the code to paste the formatted text as required.
+
+End Sub
