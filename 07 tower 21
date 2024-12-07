@@ -1,0 +1,86 @@
+Sub ModifyAndRepeatRowsContracts()
+    Dim ws As Worksheet
+    Dim lastRow As Long, startRow As Long, endRow As Long
+    Dim uniqueValue As String
+    Dim copyRange As Range, pasteRow As Long
+    Dim newValues As Variant
+    Dim i As Long, j As Long
+    Dim currentValue As String
+    
+    ' Define the new values for column L
+    newValues = Array("2.5Mxs2.5M", "2.5Mxs5M", "2.5Mxs7.5M", "2.5Mxs10M", "2.5Mxs12.5M", _
+                      "2.5Mxs15M", "2.5Mxs17.5M", "5Mxs20", "5Mxs25", "5Mxs30", _
+                      "5Mxs35M", "5Mxs40M", "5Mxs45M", "25Mxs50M", "25Mxs75M", _
+                      "25Mxs100M", "25Mxs125M", "25Mxs150M", "25Mxs175M", "50Mxs200M", "250Mxs250M")
+
+    ' Set the worksheet to "contracts"
+    Set ws = ThisWorkbook.Sheets("contracts")
+
+    ' Find the last row in the sheet for column L
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+
+    ' Ensure there is data beyond the header
+    If lastRow < 2 Then
+        MsgBox "No data found in column L!", vbExclamation
+        Exit Sub
+    End If
+
+    ' Identify the first unique value in column L (starting from row 2)
+    uniqueValue = ws.Cells(2, "L").Value
+    startRow = 2
+    endRow = startRow
+
+    ' Find the end of the first set
+    Do While ws.Cells(endRow + 1, "L").Value = uniqueValue
+        endRow = endRow + 1
+    Loop
+
+    ' Delete all rows below the first set
+    If endRow < lastRow Then
+        ws.Rows(endRow + 1 & ":" & lastRow).Delete
+    End If
+
+    ' Define the range to copy
+    Set copyRange = ws.Rows(startRow & ":" & endRow)
+
+    ' Paste 21 times and modify column L
+    pasteRow = endRow + 1
+    For i = LBound(newValues) To UBound(newValues)
+        ' Copy and paste the range
+        copyRange.Copy Destination:=ws.Rows(pasteRow)
+        
+        ' Update column L with the new value
+        ws.Range("L" & pasteRow & ":L" & pasteRow + endRow - startRow).Value = newValues(i)
+        
+        ' Move to the next paste row
+        pasteRow = pasteRow + (endRow - startRow + 1)
+    Next i
+
+    ' Assign values to columns O and P based on column L
+    lastRow = ws.Cells(ws.Rows.Count, "L").End(xlUp).Row
+    For j = 2 To lastRow
+        currentValue = ws.Cells(j, "L").Value
+        Select Case True
+            Case Left(currentValue, 4) = "2.5M"
+                ws.Cells(j, "O").Value = 2500000
+                ws.Cells(j, "P").Value = 2500000
+            Case Left(currentValue, 2) = "5M"
+                ws.Cells(j, "O").Value = 5000000
+                ws.Cells(j, "P").Value = 5000000
+            Case Left(currentValue, 3) = "25M"
+                ws.Cells(j, "O").Value = 25000000
+                ws.Cells(j, "P").Value = 25000000
+            Case Left(currentValue, 3) = "50M"
+                ws.Cells(j, "O").Value = 50000000
+                ws.Cells(j, "P").Value = 50000000
+            Case Left(currentValue, 4) = "250M"
+                ws.Cells(j, "O").Value = 250000000
+                ws.Cells(j, "P").Value = 250000000
+        End Select
+    Next j
+
+    ' Clear the clipboard
+    Application.CutCopyMode = False
+
+    MsgBox "Operation completed successfully on 'contracts' tab!", vbInformation
+End Sub
