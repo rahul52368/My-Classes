@@ -1,0 +1,91 @@
+Sub ProcessQuoteTrackerData()
+    Dim wbSource As Workbook
+    Dim wsSource As Worksheet
+    Dim wsDestination As Worksheet
+    Dim filePath As String
+    Dim lastRowSource As Long
+    Dim lastRowDestination As Long
+    Dim copyRange As Range
+    Dim firstSetLastRow As Long
+    Dim secondSetStartRow As Long
+    
+    ' Ask the user to select the source file
+    With Application.FileDialog(msoFileDialogFilePicker)
+        .Title = "Select the Source File"
+        .Filters.Clear
+        .Filters.Add "Excel Files", "*.xls; *.xlsx; *.xlsm"
+        If .Show = -1 Then
+            filePath = .SelectedItems(1)
+        Else
+            MsgBox "No file selected. Operation canceled.", vbExclamation
+            Exit Sub
+        End If
+    End With
+    
+    ' Open the selected workbook
+    On Error Resume Next
+    Set wbSource = Workbooks.Open(filePath)
+    If wbSource Is Nothing Then
+        MsgBox "Could not open the file. Please try again.", vbCritical
+        Exit Sub
+    End If
+    On Error GoTo 0
+    
+    ' Set the source worksheet
+    On Error Resume Next
+    Set wsSource = wbSource.Sheets("Quote Tracker - Master")
+    If wsSource Is Nothing Then
+        MsgBox "Sheet 'Quote Tracker - Master' not found in the selected file.", vbCritical
+        wbSource.Close False
+        Exit Sub
+    End If
+    On Error GoTo 0
+    
+    ' Determine the last row in column C
+    lastRowSource = wsSource.Cells(wsSource.Rows.Count, "C").End(xlUp).Row
+    
+    ' Define the range to copy (C2:TlastRow)
+    If lastRowSource >= 2 Then
+        Set copyRange = wsSource.Range("C2:T" & lastRowSource)
+    Else
+        MsgBox "No data found in column C starting from row 2.", vbInformation
+        wbSource.Close False
+        Exit Sub
+    End If
+    
+    ' Set the destination worksheet (e.g., the active sheet or specify a sheet name)
+    Set wsDestination = ThisWorkbook.ActiveSheet
+    
+    ' Copy data to the destination worksheet from row 1 and column 1
+    wsDestination.Cells.Clear
+    copyRange.Copy
+    wsDestination.Cells(1, 1).PasteSpecial xlPasteValues
+    
+    ' Insert two columns after column N
+    wsDestination.Columns("O:O").Insert Shift:=xlToRight
+    wsDestination.Columns("O:O").Insert Shift:=xlToRight
+    wsDestination.Cells(1, "O").Value = "Data Time"
+    wsDestination.Cells(1, "P").Value = "QC Time"
+    
+    ' Find the last row after pasting the first set of data
+    firstSetLastRow = wsDestination.Cells(wsDestination.Rows.Count, "A").End(xlUp).Row
+    
+    ' Copy all data except header to append below
+    copyRange.Offset(1, 0).Copy
+    wsDestination.Cells(firstSetLastRow + 1, 1).PasteSpecial xlPasteValues
+    
+    ' Determine the start of the second set
+    secondSetStartRow = firstSetLastRow + 1
+    lastRowDestination = wsDestination.Cells(wsDestination.Rows.Count, "A").End(xlUp).Row
+    
+    ' Remove column J values (except header) from the first set
+    wsDestination.Range("J2:J" & firstSetLastRow).ClearContents
+    
+    ' Remove column G values (except header) from the second set
+    wsDestination.Range("G" & secondSetStartRow & ":G" & lastRowDestination).ClearContents
+    
+    ' Clean up
+    Application.CutCopyMode = False
+    wbSource.Close False
+    MsgBox "Data processed successfully!", vbInformation
+End Sub
