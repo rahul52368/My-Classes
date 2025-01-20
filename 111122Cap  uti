@@ -1,0 +1,119 @@
+Sub ProcessQuoteTrackerDataWithTimeCalculations()
+    Dim wbSource As Workbook
+    Dim wsSource As Worksheet
+    Dim wsDestination As Worksheet
+    Dim filePath As String
+    Dim lastRowSource As Long
+    Dim firstSetLastRow As Long
+    Dim secondSetStartRow As Long
+    Dim lastRowDestination As Long
+    Dim processingStatusCol As Long
+    Dim dataTimeCol As Long, qcTimeCol As Long, totalTimeCol As Long
+    Dim timeDataCol As Long, timeRACol As Long, timeDQCCol As Long, timeRQCCol As Long
+    
+    ' Ask the user to select the source file
+    With Application.FileDialog(msoFileDialogFilePicker)
+        .Title = "Select the Source File"
+        .Filters.Clear
+        .Filters.Add "Excel Files", "*.xls; *.xlsx; *.xlsm"
+        If .Show = -1 Then
+            filePath = .SelectedItems(1)
+        Else
+            MsgBox "No file selected. Operation canceled.", vbExclamation
+            Exit Sub
+        End If
+    End With
+    
+    ' Open the selected workbook
+    On Error Resume Next
+    Set wbSource = Workbooks.Open(filePath)
+    If wbSource Is Nothing Then
+        MsgBox "Could not open the file. Please try again.", vbCritical
+        Exit Sub
+    End If
+    On Error GoTo 0
+    
+    ' Set the source worksheet
+    On Error Resume Next
+    Set wsSource = wbSource.Sheets("Quote Tracker - Master")
+    If wsSource Is Nothing Then
+        MsgBox "Sheet 'Quote Tracker - Master' not found in the selected file.", vbCritical
+        wbSource.Close False
+        Exit Sub
+    End If
+    On Error GoTo 0
+    
+    ' Determine the last row in column C
+    lastRowSource = wsSource.Cells(wsSource.Rows.Count, "C").End(xlUp).Row
+    
+    ' Set the destination worksheet (active sheet)
+    Set wsDestination = ThisWorkbook.ActiveSheet
+    wsDestination.Cells.Clear
+    
+    ' Copy data from C2:T (excluding header)
+    wsDestination.Range("A1").Resize(lastRowSource - 1, 18).Value = wsSource.Range("C2:T" & lastRowSource).Value
+    
+    ' Insert two columns after column N
+    wsDestination.Columns("O:O").Insert Shift:=xlToRight
+    wsDestination.Columns("O:O").Insert Shift:=xlToRight
+    wsDestination.Cells(1, "O").Value = "Data Time"
+    wsDestination.Cells(1, "P").Value = "QC Time"
+    
+    ' Identify the "Processing Status" column
+    processingStatusCol = Application.Match("Processing Status", wsDestination.Rows(1), 0)
+    If Not IsError(processingStatusCol) Then
+        ' Filter and delete rows where "Processing Status" = "Declined"
+        With wsDestination
+            .AutoFilterMode = False
+            .Range("A1").AutoFilter Field:=processingStatusCol, Criteria1:="Declined"
+            .Range("A2:A" & wsDestination.Cells(wsDestination.Rows.Count, "A").End(xlUp).Row).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+            .AutoFilterMode = False
+        End With
+    End If
+    
+    ' Determine the last row of the first set
+    firstSetLastRow = wsDestination.Cells(wsDestination.Rows.Count, "A").End(xlUp).Row
+    
+    ' Duplicate data (excluding header) and append below the first set
+    wsDestination.Range("A2:T" & firstSetLastRow).Copy
+    secondSetStartRow = firstSetLastRow + 1
+    wsDestination.Cells(secondSetStartRow, 1).Resize(firstSetLastRow - 1, 18).Value = wsDestination.Range("A2:T" & firstSetLastRow).Value
+    
+    ' Find the last row of the second set
+    lastRowDestination = wsDestination.Cells(wsDestination.Rows.Count, "A").End(xlUp).Row
+    
+    ' Clear column J values (except header) from the first set
+    wsDestination.Range("J2:J" & firstSetLastRow).ClearContents
+    
+    ' Clear column G values (except header) from the second set
+    wsDestination.Range("G" & secondSetStartRow & ":G" & lastRowDestination).ClearContents
+    
+    ' Calculate Data Time and QC Time
+    timeDataCol = Application.Match("Time - Data", wsDestination.Rows(1), 0)
+    timeRACol = Application.Match("Time - RA", wsDestination.Rows(1), 0)
+    timeDQCCol = Application.Match("Time DQC", wsDestination.Rows(1), 0)
+    timeRQCCol = Application.Match("Time RQC", wsDestination.Rows(1), 0)
+    
+    dataTimeCol = Application.Match("Data Time", wsDestination.Rows(1), 0)
+    qcTimeCol = Application.Match("QC Time", wsDestination.Rows(1), 0)
+    
+    For i = 2 To lastRowDestination
+        wsDestination.Cells(i, dataTimeCol).Value = wsDestination.Cells(i, timeDataCol).Value + wsDestination.Cells(i, timeRACol).Value
+        wsDestination.Cells(i, qcTimeCol).Value = wsDestination.Cells(i, timeDQCCol).Value + wsDestination.Cells(i, timeRQCCol).Value
+    Next i
+    
+    ' Insert "Total Time" column
+    wsDestination.Columns("Q:Q").Insert Shift:=xlToRight
+    wsDestination.Cells(1, "Q").Value = "Total Time"
+    totalTimeCol = Application.Match("Total Time", wsDestination.Rows(1), 0)
+    
+    ' Calculate Total Time (Data Time + QC Time)
+    For i = 2 To lastRowDestination
+        wsDestination.Cells(i, totalTimeCol).Value = wsDestination.Cells(i, dataTimeCol).Value + wsDestination.Cells(i, qcTimeCol).Value
+    Next i
+    
+    ' Clean up
+    Application.CutCopyMode = False
+    wbSource.Close False
+    MsgBox "Data processed successfully!", vbInformation
+End Sub
