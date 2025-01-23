@@ -1,0 +1,51 @@
+Sub CopyAndPasteData()
+
+    Dim wsSource As Worksheet
+    Dim wsDestination As Worksheet
+    Dim lastRowSource As Long
+    Dim lastRowDest As Long
+
+    ' Set the source and destination sheets
+    Set wsSource = ThisWorkbook.Sheets("Ping - Master Data")
+    Set wsDestination = ThisWorkbook.Sheets("CU_Data")
+    
+    ' Find the last row in the source sheet
+    lastRowSource = wsSource.Cells(wsSource.Rows.Count, "A").End(xlUp).Row
+    
+    ' Find the last row in the destination sheet for each column
+    With wsDestination
+        ' Date Completed -> Received Date
+        lastRowDest = .Cells(.Rows.Count, "A").End(xlUp).Row + 1
+        wsSource.Range("B2:B" & lastRowSource).Copy
+        .Cells(lastRowDest, "A").PasteSpecial xlPasteValues
+        
+        ' Insured Name -> Account
+        lastRowDest = .Cells(.Rows.Count, "B").End(xlUp).Row + 1
+        wsSource.Range("C2:C" & lastRowSource).Copy
+        .Cells(lastRowDest, "B").PasteSpecial xlPasteValues
+
+        ' Analyst Name -> Data
+        lastRowDest = .Cells(.Rows.Count, "C").End(xlUp).Row + 1
+        wsSource.Range("D2:D" & lastRowSource).Copy
+        .Cells(lastRowDest, "C").PasteSpecial xlPasteValues
+        
+        ' QC -> Analyst-RQC
+        lastRowDest = .Cells(.Rows.Count, "D").End(xlUp).Row + 1
+        wsSource.Range("E2:E" & lastRowSource).Copy
+        .Cells(lastRowDest, "D").PasteSpecial xlPasteValues
+        
+        ' Time (Min) -> Data Time
+        lastRowDest = .Cells(.Rows.Count, "E").End(xlUp).Row + 1
+        wsSource.Range("F2:F" & lastRowSource).Copy
+        .Cells(lastRowDest, "E").PasteSpecial xlPasteValues
+        
+        ' QC Time -> QC Time
+        lastRowDest = .Cells(.Rows.Count, "F").End(xlUp).Row + 1
+        wsSource.Range("G2:G" & lastRowSource).Copy
+        .Cells(lastRowDest, "F").PasteSpecial xlPasteValues
+    End With
+    
+    ' Clean up
+    Application.CutCopyMode = False
+    MsgBox "Data copied successfully!", vbInformation
+End Sub
