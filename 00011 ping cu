@@ -1,0 +1,49 @@
+Sub CopyAndMatchHeaders()
+
+    Dim wsSource As Worksheet
+    Dim wsDestination As Worksheet
+    Dim lastRowSource As Long
+    Dim lastRowDest As Long
+    Dim sourceCol As Range
+    Dim destCol As Range
+    
+    ' Set the source and destination worksheets
+    Set wsSource = ThisWorkbook.Sheets("Ping - Master Data")
+    Set wsDestination = ThisWorkbook.Sheets("CU_Data")
+    
+    ' Find the last row in the source sheet
+    lastRowSource = wsSource.Cells(wsSource.Rows.Count, "A").End(xlUp).Row
+
+    ' Define headers mapping
+    Dim headers As Object
+    Set headers = CreateObject("Scripting.Dictionary")
+    headers.Add "Date Completed", "Received Date"
+    headers.Add "Insured Name", "Account"
+    headers.Add "Analyst Name", "Data"
+    headers.Add "QC", "Analyst-RQC"
+    headers.Add "Time (Min)", "Data Time"
+    headers.Add "QC Time", "QC Time"
+
+    ' Loop through the headers and copy data
+    Dim key As Variant
+    For Each key In headers.Keys
+        ' Find source column
+        Set sourceCol = wsSource.Rows(1).Find(What:=key, LookIn:=xlValues, LookAt:=xlWhole)
+        If Not sourceCol Is Nothing Then
+            ' Find destination column
+            Set destCol = wsDestination.Rows(1).Find(What:=headers(key), LookIn:=xlValues, LookAt:=xlWhole)
+            If Not destCol Is Nothing Then
+                ' Find the last row in the destination column
+                lastRowDest = wsDestination.Cells(wsDestination.Rows.Count, destCol.Column).End(xlUp).Row + 1
+                ' Copy data
+                wsSource.Range(wsSource.Cells(2, sourceCol.Column), wsSource.Cells(lastRowSource, sourceCol.Column)).Copy
+                wsDestination.Cells(lastRowDest, destCol.Column).PasteSpecial xlPasteValues
+            End If
+        End If
+    Next key
+
+    ' Clean up
+    Application.CutCopyMode = False
+    MsgBox "Data matched and appended successfully!", vbInformation
+
+End Sub
