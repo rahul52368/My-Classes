@@ -1,0 +1,32 @@
+Sub ListSheetNames()
+    Dim ws As Worksheet
+    Dim sheet1 As Worksheet
+    Dim i As Integer
+
+    ' Set reference to Sheet1
+    On Error Resume Next
+    Set sheet1 = ThisWorkbook.Sheets("Sheet1")
+    If sheet1 Is Nothing Then
+        MsgBox "Sheet1 not found!", vbExclamation
+        Exit Sub
+    End If
+    On Error GoTo 0
+
+    ' Clear previous data in first column
+    sheet1.Columns(1).Clear
+
+    ' Add header
+    sheet1.Cells(1, 1).Value = "Sheet Names"
+
+    ' Loop through all sheets and list names
+    i = 2
+    For Each ws In ThisWorkbook.Sheets
+        sheet1.Cells(i, 1).Value = ws.Name
+        i = i + 1
+    Next ws
+
+    ' Autofit column
+    sheet1.Columns(1).AutoFit
+
+    MsgBox "Sheet names listed in 'Sheet1'.", vbInformation
+End Sub
