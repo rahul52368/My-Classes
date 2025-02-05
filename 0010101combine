@@ -1,0 +1,87 @@
+Sub CombineSheets()
+    Dim ws As Worksheet, masterSheet As Worksheet
+    Dim headerDict As Object
+    Dim colMap As Object
+    Dim lastRow As Long, lastCol As Long
+    Dim masterRow As Long, masterCol As Long
+    Dim srcRow As Long, srcCol As Long
+    Dim i As Long, j As Long
+    Dim header As String
+    Dim data As Variant
+
+    ' Create a new dictionary for headers
+    Set headerDict = CreateObject("Scripting.Dictionary")
+    Set colMap = CreateObject("Scripting.Dictionary")
+
+    ' Create or clear Master Sheet
+    On Error Resume Next
+    Set masterSheet = ThisWorkbook.Sheets("MasterSheet")
+    If masterSheet Is Nothing Then
+        Set masterSheet = ThisWorkbook.Sheets.Add
+        masterSheet.Name = "MasterSheet"
+    Else
+        masterSheet.Cells.Clear
+    End If
+    On Error GoTo 0
+    
+    ' Start with fixed columns
+    masterSheet.Cells(1, 1).Value = "Sheet Name"
+    masterSheet.Cells(1, 2).Value = "Row Number"
+    masterCol = 3 ' Third column for actual headers
+
+    ' Scan all sheets for headers
+    For Each ws In ThisWorkbook.Sheets
+        If ws.Name <> masterSheet.Name Then
+            lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+            lastCol = ws.Cells(1, Columns.Count).End(xlToLeft).Column
+            
+            ' Store headers and map them
+            For i = 1 To lastCol
+                header = Trim(ws.Cells(1, i).Value)
+                If header <> "" And Not headerDict.exists(header) Then
+                    headerDict.Add header, masterCol
+                    colMap.Add header, masterCol
+                    masterSheet.Cells(1, masterCol).Value = header
+                    masterCol = masterCol + 1
+                End If
+            Next i
+        End If
+    Next ws
+
+    ' Append data from all sheets
+    masterRow = 2 ' Start from second row
+    For Each ws In ThisWorkbook.Sheets
+        If ws.Name <> masterSheet.Name Then
+            lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+            lastCol = ws.Cells(1, Columns.Count).End(xlToLeft).Column
+
+            ' Copy data
+            For i = 2 To lastRow
+                masterSheet.Cells(masterRow, 1).Value = ws.Name ' Sheet Name
+                masterSheet.Cells(masterRow, 2).Value = i ' Row Number
+
+                ' Place data in appropriate columns
+                For j = 1 To lastCol
+                    header = Trim(ws.Cells(1, j).Value)
+                    If header <> "" Then
+                        If colMap.exists(header) Then
+                            masterSheet.Cells(masterRow, colMap(header)).Value = ws.Cells(i, j).Value
+                        Else
+                            ' New columns for non-matching headers
+                            masterSheet.Cells(1, masterCol).Value = header
+                            colMap.Add header, masterCol
+                            masterSheet.Cells(masterRow, masterCol).Value = ws.Cells(i, j).Value
+                            masterCol = masterCol + 1
+                        End If
+                    End If
+                Next j
+                
+                masterRow = masterRow + 1
+            Next i
+        End If
+    Next ws
+
+    ' Autofit columns
+    masterSheet.Columns.AutoFit
+    MsgBox "Sheets combined successfully into 'MasterSheet'.", vbInformation
+End Sub
