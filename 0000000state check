@@ -1,0 +1,121 @@
+Here's the complete VBA code including approximate bounding boxes (latitude and longitude ranges) for all 50 U.S. states. This will validate the latitude and longitude for each state abbreviation in your Excel "locations" sheet.
+
+VBA Code (Full, with all states):
+
+Sub ValidateLatLongByState()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("locations")
+    
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    ' Dictionary of state bounding boxes
+    Dim stateBounds As Object
+    Set stateBounds = CreateObject("Scripting.Dictionary")
+
+    ' Format: stateBounds("XX") = Array(minLat, maxLat, minLong, maxLong)
+    stateBounds.Add "AL", Array(30.2, 35.0, -88.5, -84.9)
+    stateBounds.Add "AK", Array(51.2, 71.4, -179.1, -129.9)
+    stateBounds.Add "AZ", Array(31.3, 37.0, -114.8, -109.0)
+    stateBounds.Add "AR", Array(33.0, 36.5, -94.6, -89.6)
+    stateBounds.Add "CA", Array(32.5, 42.0, -124.5, -114.1)
+    stateBounds.Add "CO", Array(37.0, 41.0, -109.1, -102.0)
+    stateBounds.Add "CT", Array(40.9, 42.1, -73.7, -71.8)
+    stateBounds.Add "DE", Array(38.4, 39.8, -75.8, -75.0)
+    stateBounds.Add "FL", Array(24.5, 31.0, -87.6, -80.0)
+    stateBounds.Add "GA", Array(30.4, 35.0, -85.6, -80.8)
+    stateBounds.Add "HI", Array(18.9, 22.2, -160.3, -154.8)
+    stateBounds.Add "ID", Array(42.0, 49.0, -117.2, -111.0)
+    stateBounds.Add "IL", Array(36.9, 42.5, -91.5, -87.0)
+    stateBounds.Add "IN", Array(37.8, 41.8, -88.1, -84.8)
+    stateBounds.Add "IA", Array(40.4, 43.5, -96.6, -90.1)
+    stateBounds.Add "KS", Array(36.9, 40.0, -102.1, -94.6)
+    stateBounds.Add "KY", Array(36.5, 39.2, -89.6, -82.0)
+    stateBounds.Add "LA", Array(28.9, 33.0, -94.0, -88.8)
+    stateBounds.Add "ME", Array(43.0, 47.5, -71.1, -66.9)
+    stateBounds.Add "MD", Array(37.9, 39.7, -79.5, -75.0)
+    stateBounds.Add "MA", Array(41.2, 42.9, -73.5, -69.9)
+    stateBounds.Add "MI", Array(41.6, 48.3, -90.4, -82.4)
+    stateBounds.Add "MN", Array(43.5, 49.4, -97.2, -89.5)
+    stateBounds.Add "MS", Array(30.2, 35.0, -91.7, -88.1)
+    stateBounds.Add "MO", Array(36.0, 40.6, -95.8, -89.1)
+    stateBounds.Add "MT", Array(44.4, 49.0, -116.1, -104.0)
+    stateBounds.Add "NE", Array(40.0, 43.0, -104.1, -95.3)
+    stateBounds.Add "NV", Array(35.0, 42.0, -120.0, -114.0)
+    stateBounds.Add "NH", Array(42.7, 45.3, -72.6, -70.6)
+    stateBounds.Add "NJ", Array(38.9, 41.4, -75.6, -73.9)
+    stateBounds.Add "NM", Array(31.3, 37.0, -109.1, -103.0)
+    stateBounds.Add "NY", Array(40.5, 45.1, -79.8, -71.8)
+    stateBounds.Add "NC", Array(33.8, 36.6, -84.3, -75.4)
+    stateBounds.Add "ND", Array(45.9, 49.0, -104.1, -96.5)
+    stateBounds.Add "OH", Array(38.4, 42.3, -84.8, -80.5)
+    stateBounds.Add "OK", Array(33.6, 37.0, -103.0, -94.4)
+    stateBounds.Add "OR", Array(41.9, 46.3, -124.6, -116.5)
+    stateBounds.Add "PA", Array(39.7, 42.5, -80.5, -74.7)
+    stateBounds.Add "RI", Array(41.1, 42.0, -71.9, -71.1)
+    stateBounds.Add "SC", Array(32.0, 35.2, -83.4, -78.5)
+    stateBounds.Add "SD", Array(42.5, 45.9, -104.1, -96.4)
+    stateBounds.Add "TN", Array(34.9, 36.7, -90.4, -81.6)
+    stateBounds.Add "TX", Array(25.8, 36.5, -106.7, -93.5)
+    stateBounds.Add "UT", Array(37.0, 42.0, -114.1, -109.0)
+    stateBounds.Add "VT", Array(42.7, 45.0, -73.4, -71.5)
+    stateBounds.Add "VA", Array(36.5, 39.5, -83.7, -75.2)
+    stateBounds.Add "WA", Array(45.5, 49.0, -124.8, -116.9)
+    stateBounds.Add "WV", Array(37.2, 40.6, -82.7, -77.7)
+    stateBounds.Add "WI", Array(42.5, 47.3, -92.9, -86.3)
+    stateBounds.Add "WY", Array(41.0, 45.0, -111.1, -104.0)
+
+    Dim i As Long
+    For i = 2 To lastRow ' Assumes headers in row 1
+        Dim st As String
+        Dim lat As Variant
+        Dim lon As Variant
+        
+        st = Trim(UCase(ws.Cells(i, 1).Value))
+        lat = ws.Cells(i, 2).Value
+        lon = ws.Cells(i, 3).Value
+        
+        If IsNumeric(lat) And IsNumeric(lon) Then
+            If stateBounds.exists(st) Then
+                Dim bounds As Variant
+                bounds = stateBounds(st)
+                
+                If lat < bounds(0) Or lat > bounds(1) Or lon < bounds(2) Or lon > bounds(3) Then
+                    ws.Cells(i, 4).Value = "Invalid Lat/Long"
+                Else
+                    ws.Cells(i, 4).Value = "OK"
+                End If
+            Else
+                ws.Cells(i, 4).Value = "Unknown State"
+            End If
+        Else
+            ws.Cells(i, 4).Value = "Invalid Input"
+        End If
+    Next i
+
+    MsgBox "Validation complete. Check Column D for results.", vbInformation
+End Sub
+
+How to Use:
+
+1. Open Excel.
+
+
+2. Press ALT + F11 to open the VBA editor.
+
+
+3. Insert a new Module (Insert > Module).
+
+
+4. Paste the full code above.
+
+
+5. Close the editor.
+
+
+6. Go back to Excel and run the macro (Alt + F8, then choose ValidateLatLongByState).
+
+
+
+Let me know if your state codes are in a different column or if you want it to flag in color as well.
+
