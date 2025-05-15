@@ -1,1 +1,18 @@
+Sub AskBeforeRunning()
 
+    Dim answer As VbMsgBoxResult
+    answer = MsgBox("Do you want to run the macro on this sheet?", vbYesNo + vbQuestion, "Confirmation")
+
+    If answer = vbYes Then
+        ' Replace this with your macro or procedure
+        Call RunSheetMacro
+    Else
+        Exit Sub
+    End If
+
+End Sub
+
+Sub RunSheetMacro()
+    ' Your sheet-specific macro code goes here
+    MsgBox "Macro is now running on " & ActiveSheet.Name
+End Sub
