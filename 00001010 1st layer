@@ -1,13 +1,14 @@
-Sub UpdateFirstUniqueLayerID_ByHeader()
+Sub ReplaceAllMatchingFirstUniqueLayerID()
     Dim ws As Worksheet
     Dim lastRow As Long, headerRow As Long
     Dim colLayerID As Long, colLimit1 As Long, colLimit2 As Long, colAttachmentAmt As Long
     Dim dict As Object
     Dim i As Long
-    Dim currentVal As Variant
+    Dim targetValue As Variant
+    Dim foundFirst As Boolean
     
     Set ws = ActiveSheet
-    headerRow = 1 ' Change this if headers are not in row 1
+    headerRow = 1 ' Row where headers are
     lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
     Set dict = CreateObject("Scripting.Dictionary")
     
@@ -17,18 +18,29 @@ Sub UpdateFirstUniqueLayerID_ByHeader()
     colLimit2 = GetColumnByHeader(ws, "Limit2", headerRow)
     colAttachmentAmt = GetColumnByHeader(ws, "AttachmentAmt", headerRow)
     
-    ' Loop through data rows
+    ' Step 1: Find the first unique LayerID
     For i = headerRow + 1 To lastRow
+        Dim currentVal As Variant
         currentVal = ws.Cells(i, colLayerID).Value
-        
-        If Not dict.exists(currentVal) Then
+        If Not dict.exists(currentVal) And Not IsEmpty(currentVal) Then
             dict.Add currentVal, True
-            ' Update values
+            targetValue = currentVal
+            Exit For
+        End If
+    Next i
+    
+    If IsEmpty(targetValue) Then
+        MsgBox "No unique LayerID found."
+        Exit Sub
+    End If
+    
+    ' Step 2: Replace all rows matching the first unique LayerID
+    For i = headerRow + 1 To lastRow
+        If ws.Cells(i, colLayerID).Value = targetValue Then
             ws.Cells(i, colLayerID).Value = "2.5Mxs0"
             ws.Cells(i, colLimit1).Value = 2500000
             ws.Cells(i, colLimit2).Value = 2500000
             ws.Cells(i, colAttachmentAmt).Value = 0
-            Exit For
         End If
     Next i
 End Sub
