@@ -1,0 +1,46 @@
+Sub UpdateFirstUniqueLayerID_ByHeader()
+    Dim ws As Worksheet
+    Dim lastRow As Long, headerRow As Long
+    Dim colLayerID As Long, colLimit1 As Long, colLimit2 As Long, colAttachmentAmt As Long
+    Dim dict As Object
+    Dim i As Long
+    Dim currentVal As Variant
+    
+    Set ws = ActiveSheet
+    headerRow = 1 ' Change this if headers are not in row 1
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    ' Get column numbers by header name
+    colLayerID = GetColumnByHeader(ws, "LayerID", headerRow)
+    colLimit1 = GetColumnByHeader(ws, "Limit1", headerRow)
+    colLimit2 = GetColumnByHeader(ws, "Limit2", headerRow)
+    colAttachmentAmt = GetColumnByHeader(ws, "AttachmentAmt", headerRow)
+    
+    ' Loop through data rows
+    For i = headerRow + 1 To lastRow
+        currentVal = ws.Cells(i, colLayerID).Value
+        
+        If Not dict.exists(currentVal) Then
+            dict.Add currentVal, True
+            ' Update values
+            ws.Cells(i, colLayerID).Value = "2.5Mxs0"
+            ws.Cells(i, colLimit1).Value = 2500000
+            ws.Cells(i, colLimit2).Value = 2500000
+            ws.Cells(i, colAttachmentAmt).Value = 0
+            Exit For
+        End If
+    Next i
+End Sub
+
+Function GetColumnByHeader(ws As Worksheet, headerName As String, headerRow As Long) As Long
+    Dim c As Range
+    For Each c In ws.Rows(headerRow).Cells
+        If Trim(c.Value) = headerName Then
+            GetColumnByHeader = c.Column
+            Exit Function
+        End If
+    Next c
+    MsgBox "Header '" & headerName & "' not found!", vbCritical
+    End
+End Function
