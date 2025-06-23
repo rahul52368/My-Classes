@@ -1,0 +1,56 @@
+Sub SaveToday_ModelingReport_CSV()
+
+    Dim olApp As Object
+    Dim olNs As Object
+    Dim Inbox As Object
+    Dim Items As Object
+    Dim FilteredItems As Object
+    Dim Mail As Object
+    Dim Atmt As Object
+    Dim SaveFolder As String
+    Dim SenderEmail As String
+    Dim TodayFilter As String
+    Dim FileName As String
+    Dim SavedCount As Integer
+
+    ' 🔁 Customize these:
+    SaveFolder = "C:\YourFolderPath\"          ' <-- CHANGE THIS
+    SenderEmail = "sender@example.com"         ' <-- CHANGE THIS
+
+    ' Ensure path ends with \
+    If Right(SaveFolder, 1) <> "\" Then SaveFolder = SaveFolder & "\"
+
+    ' Outlook setup
+    Set olApp = CreateObject("Outlook.Application")
+    Set olNs = olApp.GetNamespace("MAPI")
+    Set Inbox = olNs.GetDefaultFolder(6) ' Inbox = 6
+
+    ' Filter today's mail
+    TodayFilter = "[ReceivedTime] >= '" & Format(Date, "ddddd") & "'"
+    Set Items = Inbox.Items
+    Items.Sort "[ReceivedTime]", True
+    Set FilteredItems = Items.Restrict(TodayFilter)
+
+    SavedCount = 0
+
+    ' Loop through today's filtered mails
+    For Each Mail In FilteredItems
+        If Mail.Class = 43 Then ' MailItem
+            If LCase(Mail.SenderEmailAddress) = LCase(SenderEmail) Then
+
+                ' Loop through attachments
+                For Each Atmt In Mail.Attachments
+                    If InStr(LCase(Atmt.FileName), "modeling-report") > 0 Then
+                        FileName = SaveFolder & Format(Now, "yyyymmdd_hhnnss_") & Atmt.FileName
+                        Atmt.SaveAsFile FileName
+                        SavedCount = SavedCount + 1
+                    End If
+                Next Atmt
+
+            End If
+        End If
+    Next Mail
+
+    MsgBox SavedCount & " matching attachment(s) saved to: " & SaveFolder, vbInformation
+
+End Sub
