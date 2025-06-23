@@ -1,46 +1,46 @@
-Sub SaveTodayCSVFromModelingReport()
-    Dim olApp As Outlook.Application
-    Dim olNamespace As Outlook.Namespace
-    Dim olFolder As Outlook.MAPIFolder
-    Dim olMail As Outlook.MailItem
-    Dim olAttachment As Outlook.Attachment
-    Dim saveFolder As String
-    Dim senderEmail As String
-    Dim todayDate As Date
-    Dim i As Long
+Sub SaveDailyCSV_ModelingReport()
+
+    Dim olApp As Object
+    Dim olNs As Object
+    Dim Inbox As Object
+    Dim Items As Object
+    Dim Item As Object
+    Dim Atmt As Object
+    Dim SaveFolder As String
+    Dim SenderEmail As String
+    Dim TodayDate As Date
+    Dim FileName As String
+    Dim SavedCount As Integer
     
-    ' ====== CUSTOMIZE THESE VALUES ======
-    saveFolder = "C:\Your\Target\Folder\"      ' Replace with your folder path
-    senderEmail = "example@domain.com"         ' Replace with sender's email
-    todayDate = Date                           ' Today’s date
-    
-    ' ====== SETUP OUTLOOK OBJECTS ======
-    Set olApp = Outlook.Application
-    Set olNamespace = olApp.GetNamespace("MAPI")
-    Set olFolder = olNamespace.GetDefaultFolder(olFolderInbox)
-    
-    ' Loop through Inbox items (latest first is more efficient)
-    For i = olFolder.Items.Count To 1 Step -1
-        If TypeOf olFolder.Items(i) Is MailItem Then
-            Set olMail = olFolder.Items(i)
-            
-            If InStr(1, olMail.Subject, "Modeling Report", vbTextCompare) > 0 Then
-                If olMail.SenderEmailAddress = senderEmail Then
-                    If Int(olMail.ReceivedTime) = todayDate Then
-                        
-                        ' Loop through attachments
-                        For Each olAttachment In olMail.Attachments
-                            If LCase(Right(olAttachment.FileName, 4)) = ".csv" Then
-                                olAttachment.SaveAsFile saveFolder & olAttachment.FileName
-                                MsgBox "CSV file saved to: " & saveFolder & olAttachment.FileName
-                                Exit Sub
-                            End If
-                        Next
+    ' Create Outlook Application
+    Set olApp = CreateObject("Outlook.Application")
+    Set olNs = olApp.GetNamespace("MAPI")
+    Set Inbox = olNs.GetDefaultFolder(6) ' 6 = olFolderInbox
+    Set Items = Inbox.Items
+
+    SaveFolder = "C:\YourFolderPath\"  ' 🔁 Change to your actual folder
+    SenderEmail = "sender@example.com" ' 🔁 Change to actual sender email
+    TodayDate = Date
+    SavedCount = 0
+
+    ' Loop through inbox items
+    For Each Item In Items
+        If Item.Class = 43 Then ' 43 = MailItem
+            If Item.ReceivedTime >= TodayDate And _
+               InStr(1, Item.Subject, "Modeling Report", vbTextCompare) > 0 And _
+               LCase(Item.SenderEmailAddress) = LCase(SenderEmail) Then
+
+                For Each Atmt In Item.Attachments
+                    If Right(Atmt.FileName, 4) = ".csv" Then
+                        FileName = SaveFolder & Format(Now, "yyyymmdd_hhnnss_") & Atmt.FileName
+                        Atmt.SaveAsFile FileName
+                        SavedCount = SavedCount + 1
                     End If
-                End If
+                Next Atmt
             End If
         End If
-    Next i
+    Next Item
 
-    MsgBox "No matching CSV email found in Inbox today.", vbInformation
+    MsgBox SavedCount & " CSV file(s) saved to: " & SaveFolder, vbInformation
+
 End Sub
