@@ -1,4 +1,4 @@
-Sub SaveDailyCSV_ModelingReport()
+Sub SaveTodayCSV_ModelingReport()
 
     Dim olApp As Object
     Dim olNs As Object
@@ -6,32 +6,40 @@ Sub SaveDailyCSV_ModelingReport()
     Dim Items As Object
     Dim Item As Object
     Dim Atmt As Object
+    Dim FilteredItems As Object
     Dim SaveFolder As String
     Dim SenderEmail As String
-    Dim TodayDate As Date
+    Dim TodayDate As String
     Dim FileName As String
     Dim SavedCount As Integer
-    
-    ' Create Outlook Application
+    Dim i As Integer
+
+    ' Set save folder and sender email
+    SaveFolder = "C:\YourFolderPath\"      ' 🔁 Change to your folder path (with trailing \)
+    SenderEmail = "sender@example.com"     ' 🔁 Change to actual sender email
+    TodayDate = Format(Date, "ddddd")      ' Outlook filter uses formatted date string
+
+    ' Initialize Outlook
     Set olApp = CreateObject("Outlook.Application")
     Set olNs = olApp.GetNamespace("MAPI")
     Set Inbox = olNs.GetDefaultFolder(6) ' 6 = olFolderInbox
-    Set Items = Inbox.Items
 
-    SaveFolder = "C:\YourFolderPath\"  ' 🔁 Change to your actual folder
-    SenderEmail = "sender@example.com" ' 🔁 Change to actual sender email
-    TodayDate = Date
+    ' Filter: Only today's emails
+    Set Items = Inbox.Items
+    Items.Sort "[ReceivedTime]", True
+    Set FilteredItems = Items.Restrict("[ReceivedTime] >= '" & Format(Date, "ddddd") & "'")
+
     SavedCount = 0
 
-    ' Loop through inbox items
-    For Each Item In Items
+    ' Loop through filtered mails
+    For Each Item In FilteredItems
         If Item.Class = 43 Then ' 43 = MailItem
-            If Item.ReceivedTime >= TodayDate And _
-               InStr(1, Item.Subject, "Modeling Report", vbTextCompare) > 0 And _
+            If InStr(1, Item.Subject, "Modeling Report", vbTextCompare) > 0 And _
                LCase(Item.SenderEmailAddress) = LCase(SenderEmail) Then
 
+                ' Save .csv attachments
                 For Each Atmt In Item.Attachments
-                    If Right(Atmt.FileName, 4) = ".csv" Then
+                    If LCase(Right(Atmt.FileName, 4)) = ".csv" Then
                         FileName = SaveFolder & Format(Now, "yyyymmdd_hhnnss_") & Atmt.FileName
                         Atmt.SaveAsFile FileName
                         SavedCount = SavedCount + 1
