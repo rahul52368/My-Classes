@@ -1,0 +1,46 @@
+Sub SaveTodayCSVFromModelingReport()
+    Dim olApp As Outlook.Application
+    Dim olNamespace As Outlook.Namespace
+    Dim olFolder As Outlook.MAPIFolder
+    Dim olMail As Outlook.MailItem
+    Dim olAttachment As Outlook.Attachment
+    Dim saveFolder As String
+    Dim senderEmail As String
+    Dim todayDate As Date
+    Dim i As Long
+    
+    ' ====== CUSTOMIZE THESE VALUES ======
+    saveFolder = "C:\Your\Target\Folder\"      ' Replace with your folder path
+    senderEmail = "example@domain.com"         ' Replace with sender's email
+    todayDate = Date                           ' Today’s date
+    
+    ' ====== SETUP OUTLOOK OBJECTS ======
+    Set olApp = Outlook.Application
+    Set olNamespace = olApp.GetNamespace("MAPI")
+    Set olFolder = olNamespace.GetDefaultFolder(olFolderInbox)
+    
+    ' Loop through Inbox items (latest first is more efficient)
+    For i = olFolder.Items.Count To 1 Step -1
+        If TypeOf olFolder.Items(i) Is MailItem Then
+            Set olMail = olFolder.Items(i)
+            
+            If InStr(1, olMail.Subject, "Modeling Report", vbTextCompare) > 0 Then
+                If olMail.SenderEmailAddress = senderEmail Then
+                    If Int(olMail.ReceivedTime) = todayDate Then
+                        
+                        ' Loop through attachments
+                        For Each olAttachment In olMail.Attachments
+                            If LCase(Right(olAttachment.FileName, 4)) = ".csv" Then
+                                olAttachment.SaveAsFile saveFolder & olAttachment.FileName
+                                MsgBox "CSV file saved to: " & saveFolder & olAttachment.FileName
+                                Exit Sub
+                            End If
+                        Next
+                    End If
+                End If
+            End If
+        End If
+    Next i
+
+    MsgBox "No matching CSV email found in Inbox today.", vbInformation
+End Sub
