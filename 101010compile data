@@ -1,0 +1,50 @@
+Sub CompileCSVFiles()
+    Dim wsDest As Worksheet
+    Dim folderPath As String
+    Dim fileName As String
+    Dim wbTemp As Workbook
+    Dim wsTemp As Worksheet
+    Dim lastRowDest As Long
+    Dim headerCopied As Boolean
+
+    ' === Set the folder path here ===
+    folderPath = "C:\Your\Folder\Path\"  ' <-- Update this path
+
+    ' Ensure path ends with backslash
+    If Right(folderPath, 1) <> "\" Then folderPath = folderPath & "\"
+
+    ' Create new worksheet for output
+    Set wsDest = ThisWorkbook.Sheets.Add
+    wsDest.Name = "CompiledData"
+    lastRowDest = 1
+    headerCopied = False
+
+    ' Loop through all CSV files in the folder
+    fileName = Dir(folderPath & "*.csv")
+
+    Do While fileName <> ""
+        Application.StatusBar = "Processing: " & fileName
+        Set wbTemp = Workbooks.Open(folderPath & fileName)
+        Set wsTemp = wbTemp.Sheets(1)
+
+        With wsTemp
+            Dim lastRow As Long
+            lastRow = .Cells(.Rows.Count, "A").End(xlUp).Row
+            
+            If Not headerCopied Then
+                .Range("A1:L" & lastRow).Copy wsDest.Cells(lastRowDest, 1)
+                lastRowDest = wsDest.Cells(wsDest.Rows.Count, "A").End(xlUp).Row + 1
+                headerCopied = True
+            Else
+                .Range("A2:L" & lastRow).Copy wsDest.Cells(lastRowDest, 1)
+                lastRowDest = wsDest.Cells(wsDest.Rows.Count, "A").End(xlUp).Row + 1
+            End If
+        End With
+
+        wbTemp.Close False
+        fileName = Dir
+    Loop
+
+    Application.StatusBar = False
+    MsgBox "All CSV files compiled into '" & wsDest.Name & "' sheet.", vbInformation
+End Sub
