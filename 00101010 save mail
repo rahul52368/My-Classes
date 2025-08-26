@@ -1,0 +1,66 @@
+Option Explicit
+
+Sub GetSharedMailboxMails()
+    Dim OutlookApp As Object
+    Dim OutlookNs As Object
+    Dim SharedFolder As Object
+    Dim Inbox As Object
+    Dim Items As Object
+    Dim Mail As Object
+    Dim i As Long
+    Dim ws As Worksheet
+    Dim SaveFolder As String
+    Dim dtStart As Date, dtEnd As Date
+    
+    ' Set folder path where mails will be saved
+    SaveFolder = "C:\Users\YourName\Documents\CLMRF_Mails\"  ' <-- Change path
+    
+    ' Date range: Yesterday 12:00 PM to Now
+    dtStart = DateAdd("h", 12, Date - 1)
+    dtEnd = Now()
+    
+    ' Setup Excel sheet
+    Set ws = ThisWorkbook.Sheets(1)
+    ws.Cells.Clear
+    ws.Range("A1").Value = "Mail Subjects (C.L.M.R.F)"
+    
+    ' Open Outlook
+    Set OutlookApp = GetObject("", "Outlook.Application")
+    Set OutlookNs = OutlookApp.GetNamespace("MAPI")
+    
+    ' Access shared mailbox
+    Set SharedFolder = OutlookNs.Folders("C.L.M.R.F")
+    Set Inbox = SharedFolder.Folders("Inbox")
+    Set Items = Inbox.Items
+    
+    ' Sort by received time
+    Items.Sort "ReceivedTime", True
+    
+    i = 2
+    For Each Mail In Items
+        If Mail.Class = 43 Then ' olMail
+            If Mail.ReceivedTime >= dtStart And Mail.ReceivedTime <= dtEnd Then
+                ' Paste subject in Excel
+                ws.Cells(i, 1).Value = Mail.Subject
+                i = i + 1
+                
+                ' Save mail as MSG file
+                Mail.SaveAs SaveFolder & Format(Mail.ReceivedTime, "yyyy-mm-dd_hh-nn-ss_") & _
+                            CleanFileName(Mail.Subject) & ".msg", 3
+            End If
+        End If
+    Next Mail
+    
+    MsgBox "Mails copied successfully!", vbInformation
+End Sub
+
+' Function to clean invalid filename characters
+Function CleanFileName(sName As String) As String
+    Dim arrInvalid() As Variant
+    Dim v As Variant
+    arrInvalid = Array("\", "/", ":", "*", "?", """", "<", ">", "|")
+    For Each v In arrInvalid
+        sName = Replace(sName, v, "_")
+    Next v
+    CleanFileName = Left(sName, 150) ' Limit length
+End Function
