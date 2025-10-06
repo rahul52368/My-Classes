@@ -1,0 +1,76 @@
+The error `"UNC paths not supported"` occurs because Windows Command Prompt (`cmd.exe`) **does not support running executables directly from UNC paths** (i.e., paths that look like `\\server\share\path\to\file.py`). It expects the current working directory or target executable to be on a **mapped drive letter**, like `Z:\folder\file.py`.
+
+### 🔍 What's a UNC Path?
+
+A UNC (Universal Naming Convention) path looks like:
+
+```
+\\ServerName\SharedFolder\some_script.py
+```
+
+But `cmd.exe` and programs called through it (like your Python interpreter) **cannot execute** directly from UNC paths without workarounds.
+
+---
+
+## ✅ Solution Options
+
+### **Option 1: Map the UNC path to a drive letter**
+
+1. Map the network share to a drive letter (e.g., `Z:`):
+
+   * Open Command Prompt:
+
+     ```cmd
+     net use Z: \\ServerName\SharedFolder
+     ```
+   * Or permanently map it via File Explorer:
+     Right-click “This PC” > “Map Network Drive…”
+
+2. Then, in your **VBA script**, use the mapped drive:
+
+   ```vba
+   Dim shell As Object
+   Set shell = VBA.CreateObject("WScript.Shell")
+   shell.Run "cmd /c Z:\path\to\python.exe Z:\path\to\script.py"
+   ```
+
+---
+
+### **Option 2: Use `pushd` in the command**
+
+If you don’t want to permanently map a drive, you can use `pushd` which temporarily maps a drive letter behind the scenes:
+
+```vba
+shell.Run "cmd /c pushd \\ServerName\SharedFolder && python script.py"
+```
+
+This changes the working directory to a mapped drive temporarily, then runs the script.
+
+> Make sure the `python` command is in your system PATH. If it's not, use the full path:
+
+```vba
+shell.Run "cmd /c pushd \\ServerName\SharedFolder && \\ServerName\SharedFolder\python.exe script.py"
+```
+
+---
+
+### **Option 3: Copy the script locally and run**
+
+As a workaround (if you can’t map drives or use `pushd`), copy the `.py` file locally and run it:
+
+```vba
+FileCopy "\\ServerName\SharedFolder\script.py", "C:\Temp\script.py"
+shell.Run "cmd /c python C:\Temp\script.py"
+```
+
+---
+
+## 🔧 Summary
+
+| Method                | Pros                 | Cons                          |
+| --------------------- | -------------------- | ----------------------------- |
+| Map Drive (`net use`) | Simple, reusable     | Requires setup                |
+| `pushd`               | No permanent mapping | Slightly more complex syntax  |
+| Copy Locally          | Works everywhere     | Not ideal for dynamic scripts |
+
+Let me know which method you prefer and I can help you implement it in your exact VBA code.
