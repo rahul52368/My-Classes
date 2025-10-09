@@ -1,0 +1,85 @@
+import io
+import os
+import pandas as pd
+import msoffcrypto
+from openpyxl import load_workbook
+import win32com.client as win32
+
+# --- Inputs ---
+file_path = r"path\to\your\file.xlsm"
+password = "your_password_here"
+
+# Example DataFrame
+df = pd.DataFrame({
+    "Name": ["Alice", "Bob", "Charlie"],
+    "Age": [25, 30, 28],
+    "City": ["Delhi", "London", "New York"]
+})
+
+def is_file_open(filepath):
+    """Check if file is open by trying to rename it temporarily."""
+    if not os.path.exists(filepath):
+        return False
+    try:
+        os.rename(filepath, filepath)
+        return False
+    except PermissionError:
+        return True
+
+def paste_to_open_excel(filepath, df):
+    """If Excel file is already open, paste DataFrame using Excel COM."""
+    excel = win32.GetObject(None, "Excel.Application")
+    for wb in excel.Workbooks:
+        if wb.FullName.lower() == os.path.abspath(filepath).lower():
+            ws = wb.Sheets("Data")
+            start_row = 2
+            start_col = 1
+            
+            # Clear old data from row 2 onwards
+            ws.Range(ws.Cells(start_row, 1), ws.Cells(ws.Rows.Count, df.shape[1])).ClearContents()
+
+            # Write headers
+            for i, col in enumerate(df.columns, start=start_col):
+                ws.Cells(start_row, i).Value = col
+
+            # Write data
+            for r in range(df.shape[0]):
+                for c in range(df.shape[1]):
+                    ws.Cells(start_row + r + 1, start_col + c).Value = df.iat[r, c]
+            print("✅ Data pasted successfully in open workbook.")
+            return
+    print("⚠️ Workbook not found open in Excel.")
+
+def paste_to_closed_excel(filepath, password, df):
+    """If Excel file is closed, decrypt and write via openpyxl."""
+    decrypted_file = "temp_decrypted.xlsm"
+    with open(filepath, "rb") as f:
+        office_file = msoffcrypto.OfficeFile(f)
+        office_file.load_key(password=password)
+        with open(decrypted_file, "wb") as dec:
+            office_file.decrypt(dec)
+
+    wb = load_workbook(decrypted_file, keep_vba=True)
+    ws = wb["Data"]
+
+    start_row = 2
+    start_col = 1
+
+    # Write headers
+    for c, col in enumerate(df.columns, start=start_col):
+        ws.cell(row=start_row, column=c, value=col)
+
+    # Write data
+    for r, row in enumerate(df.itertuples(index=False), start=start_row + 1):
+        for c, val in enumerate(row, start=start_col):
+            ws.cell(row=r, column=c, value=val)
+
+    wb.save(filepath)
+    os.remove(decrypted_file)
+    print("✅ Data pasted successfully into closed workbook.")
+
+# --- MAIN LOGIC ---
+if is_file_open(file_path):
+    paste_to_open_excel(file_path, df)
+else:
+    paste_to_closed_excel(file_path, password, df)
