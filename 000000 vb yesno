@@ -1,18 +1,59 @@
-Sub AskBeforeRunning()
+Sub Import_Locations_And_Account()
 
-    Dim answer As VbMsgBoxResult
-    answer = MsgBox("Do you want to run the macro on this sheet?", vbYesNo + vbQuestion, "Confirmation")
+    Dim FilePath As Variant
+    Dim SrcWB As Workbook
+    Dim DestWB As Workbook
+    Dim ws As Worksheet
 
-    If answer = vbYes Then
-        ' Replace this with your macro or procedure
-        Call RunSheetMacro
-    Else
-        Exit Sub
-    End If
+    Set DestWB = ThisWorkbook
 
-End Sub
+    'Select file
+    FilePath = Application.GetOpenFilename( _
+                    FileFilter:="Excel Files (*.xls*), *.xls*", _
+                    Title:="Select Source File")
 
-Sub RunSheetMacro()
-    ' Your sheet-specific macro code goes here
-    MsgBox "Macro is now running on " & ActiveSheet.Name
+    If FilePath = False Then Exit Sub
+
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+
+    'Open source workbook
+    Set SrcWB = Workbooks.Open(FilePath)
+
+    'Delete Loc1 sheet if exists
+    On Error Resume Next
+    DestWB.Worksheets("Loc1").Delete
+    On Error GoTo 0
+
+    'Create new Loc1 sheet
+    Set ws = DestWB.Worksheets.Add(After:=DestWB.Worksheets(DestWB.Worksheets.Count))
+    ws.Name = "Loc1"
+
+    'Copy Locations sheet data
+    SrcWB.Worksheets("Locations").UsedRange.Copy
+    ws.Range("A1").PasteSpecial xlPasteAll
+
+    'Delete Cont1 sheet if exists
+    On Error Resume Next
+    DestWB.Worksheets("Cont1").Delete
+    On Error GoTo 0
+
+    'Create new Cont1 sheet
+    Set ws = DestWB.Worksheets.Add(After:=DestWB.Worksheets(DestWB.Worksheets.Count))
+    ws.Name = "Cont1"
+
+    'Copy Account sheet data
+    SrcWB.Worksheets("Account").UsedRange.Copy
+    ws.Range("A1").PasteSpecial xlPasteAll
+
+    Application.CutCopyMode = False
+
+    'Close source workbook
+    SrcWB.Close SaveChanges:=False
+
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+
+    MsgBox "Locations and Account data imported successfully.", vbInformation
+
 End Sub
