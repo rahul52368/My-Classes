@@ -1,0 +1,63 @@
+
+import pandas as pd
+import re
+
+# Load the Excel file
+file_path = "C:\\Users\\Rahul\\Desktop\\Everest_Folder\\Evs_Sheet2.xlsx"
+df = pd.read_excel(file_path, sheet_name="Cleansed")
+
+# Add LocID column at the beginning (sequential IDs)
+df.insert(0, "LocID", range(1, len(df) + 1))
+
+# Step 1: Remove duplicates
+currency_counts = df["Currency"].value_counts()
+duplicate_currencies = currency_counts[currency_counts > 1].index
+
+mask = df["Currency"].isin(duplicate_currencies)
+df_duplicates = df[mask]
+
+# Drop exact duplicates among these rows
+df_no_dupes = df_duplicates.drop_duplicates()
+
+# Combine back with rows that had unique Currency values
+df_unique_currency = df[~mask]
+df = pd.concat([df_unique_currency, df_no_dupes], ignore_index=True)
+
+# Step 2: Cleaning functions
+def clean_text(value, max_length=None):
+    if pd.isna(value):
+        return value
+    cleaned = re.sub(r'[^A-Za-z0-9 ]+', '', str(value))  # keep only letters, numbers, spaces
+    if max_length:
+        cleaned = cleaned[:max_length]
+    return cleaned
+
+def clean_zip(value):
+    if pd.isna(value):
+        return value
+    val = str(value)
+    # Keep only part before "-" if present
+    if "-" in val:
+        val = val.split("-")[0]
+    # Remove non-numeric characters
+    val = re.sub(r'[^0-9]', '', val)
+    return val
+
+# Step 3: Apply cleaning
+if "LocationName" in df.columns:
+    df["LocationName"] = df["LocationName"].apply(lambda x: clean_text(x, max_length=60))
+
+for col in ["Street", "City", "State"]:
+    if col in df.columns:
+        df[col] = df[col].apply(lambda x: clean_text(x))
+
+if "Zip" in df.columns:
+    df["Zip"] = df["Zip"].apply(lambda x: clean_zip(x))
+
+# Save back to Excel
+output_path = "cleansed_output.xlsx"
+df.to_excel("C:\\Users\\Rahul\\Desktop\\Everest_Folder\\abc.xlsx", sheet_name="Cleansed2", index=False)
+df.head()
+
+print("Deduplication and cleaning complete. Output saved to:", output_path)
+output_path
